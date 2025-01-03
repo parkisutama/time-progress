@@ -30,14 +30,14 @@
             ></div>
         </div>
     <div>
-        <!-- Textual Info -->
-        <span class="mt-2 text-sm text-gray-600">
-            {todayProgress.passedHours} hours passed, {todayProgress.remainingHours} hours remaining
-        </span>
         <!-- Percentage (Bottom Right) -->
-        <span class="text-sm absolute right-0 font-medium text-gray-800">
+        <span class="text-sm absolute bottom-0 right-0 font-medium text-gray-800">
             {todayProgress.progressPercentage}%
         </span>
+        <!-- Textual Info -->
+        <p class="mt-2 text-sm text-gray-600">
+            {todayProgress.passedHours} hours passed, {todayProgress.remainingHours} hours remaining
+        </p>
     </div>
     </div>
 </div>

@@ -35,6 +35,7 @@
         <span class="absolute bottom-0 right-0 text-sm font-medium text-gray-800">
             {yearProgress.progressPercentage}%
         </span>
+        <!-- Textual Info -->
         <p class="mt-2 text-sm text-gray-600">
             {yearProgress.passedDays} days ({yearProgress.passedHours} hours) passed, {yearProgress.remainingDays} days ({yearProgress.remainingHours} hours) remaining
         </p>

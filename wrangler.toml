@@ -112,9 +112,3 @@ enabled = true
 # [[vectorize]]
 # binding = "MY_INDEX"
 # index_name = "my-index"
-
-[site]
-bucket = ".svelte-kit/output"
-
-[build]
-command = "npm run build"
