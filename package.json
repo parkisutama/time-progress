@@ -20,7 +20,8 @@
 	"devDependencies": {
 		"@eslint/compat": "^1.2.3",
 		"@playwright/test": "^1.45.3",
-		"@sveltejs/adapter-cloudflare": "^4.8.0",
+		"@sveltejs/adapter-cloudflare": "^4.9.0",
+		"@sveltejs/adapter-static": "^3.0.8",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
 		"autoprefixer": "^10.4.20",
@@ -46,6 +47,7 @@
 		"@tailwindcss/container-queries": "^0.1.1",
 		"@tailwindcss/typography": "^0.5.15",
 		"drizzle-orm": "^0.33.0",
-		"luxon": "^3.5.0"
+		"luxon": "^3.5.0",
+		"wrangler": "^3.99.0"
 	}
 }
