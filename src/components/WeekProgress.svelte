@@ -19,12 +19,18 @@
 	}
 </script>
 
-<div class="week-progress px-4 py-2">
-	<p class="text-sm text-gray-600">
-		{weekProgress.start.toFormat('dd MMMM yyyy')} - {weekProgress.end.toFormat('dd MMMM yyyy')} [Week
-		{weekProgress.start.toFormat('W')}]
-	</p>
+<div class="week-progress rounded-md bg-white px-4 py-4 shadow-md">
 	<div class="relative mt-2">
+		<div class="grid-cols-2">
+			<div class="text-left text-sm text-gray-600">
+				[Week {weekProgress.start.toFormat('WW')}]
+				{weekProgress.start.toFormat('dd MMMM yyyy')} - {weekProgress.end.toFormat('dd MMMM yyyy')}
+			</div>
+			<!-- Percentage (Bottom Right) -->
+			<div class="py-2 text-right text-sm font-medium text-gray-800">
+				{weekProgress.progressPercentage}%
+			</div>
+		</div>
 		<!-- Progress Bar -->
 		<div class="h-4 w-full rounded bg-gray-300">
 			<div
@@ -32,14 +38,11 @@
 				style="--dynamic-width: {progressWidth}%;"
 			></div>
 		</div>
-		<!-- Percentage (Bottom Right) -->
-		<span class="absolute bottom-0 right-0 text-sm font-medium text-gray-800">
-			{weekProgress.progressPercentage}%
-		</span>
+
 		<!-- Textual Info -->
 		<p class="textual-info mt-2 text-sm text-gray-600">
-			week {weekProgress.start.toFormat('W')}: {weekProgress.passedDays} days, {weekProgress.remainingDays}
-			days remaining ({weekProgress.passedHours}/{weekProgress.remainingHours} hours)
+			{weekProgress.passedDays} d, {weekProgress.remainingDays}
+			d remaining ({weekProgress.passedHours}/{weekProgress.remainingHours} h)
 		</p>
 	</div>
 </div>

@@ -19,11 +19,19 @@
 	}
 </script>
 
-<div class="month-progress px-4 py-2">
-	<p class="text-sm text-gray-600">
-		{monthProgress.start.toFormat('dd MMMM yyyy')} - {monthProgress.end.toFormat('dd MMMM yyyy')}
-	</p>
+<div class="month-progress rounded-md bg-white px-4 py-4 shadow-md">
 	<div class="relative mt-2">
+		<div class="grid-cols-2">
+			<div class="text-left text-sm text-gray-600">
+				{monthProgress.start.toFormat('dd MMMM yyyy')} - {monthProgress.end.toFormat(
+					'dd MMMM yyyy'
+				)}
+			</div>
+			<!-- Percentage (Top Right) -->
+			<div class="py-2 text-right text-sm font-medium text-gray-800">
+				{monthProgress.progressPercentage}%
+			</div>
+		</div>
 		<!-- Progress Bar -->
 		<div class="h-4 w-full rounded bg-gray-300">
 			<div
@@ -31,14 +39,10 @@
 				style="--dynamic-width: {progressWidth}%;"
 			></div>
 		</div>
-		<!-- Percentage (Bottom Right) -->
-		<span class="absolute bottom-0 right-0 text-sm font-medium text-gray-800">
-			{monthProgress.progressPercentage}%
-		</span>
 		<!-- Textual Info -->
 		<p class="textual-info mt-2 text-sm text-gray-600">
-			month: {monthProgress.passedDays} days, {monthProgress.remainingDays} days remaining ({monthProgress.passedHours}/{monthProgress.remainingHours}
-			hours)
+			{monthProgress.passedDays} d, {monthProgress.remainingDays} d remaining ({monthProgress.passedHours}/{monthProgress.remainingHours}
+			h)
 		</p>
 	</div>
 </div>

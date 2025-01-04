@@ -72,7 +72,7 @@ function getPassedHoursAndMinutes(start: DateTime, clampedNow: DateTime): string
     const remainingMinutes = endOfDay.diff(clampedNow, 'minutes').minutes; // Get remaining minutes in the day
     const remainingHoursToday = Math.floor(remainingMinutes / 60); // Calculate full hours
     const remainingMinutesToday = Math.round(remainingMinutes % 60);
-    return `${hours} hours ${minutes} minutes pass, ${remainingHoursToday} hours ${remainingMinutesToday} remaining`; // Format as "X hours Y minutes"
+    return `${hours} h ${minutes} m pass, ${remainingHoursToday} h ${remainingMinutesToday} remaining`; // Format as "X hours Y minutes"
 }
 
 

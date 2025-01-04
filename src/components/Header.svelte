@@ -19,39 +19,37 @@
 	}
 </script>
 
-<header class="px-4 py-4 text-center">
+<header class="mt-4 px-4 py-4 text-center">
 	<!-- Live Clock -->
 	<div class="rounded-md bg-white px-4 py-4 shadow-md">
 		<p class="timezone text-center">🌏 {$timeData.timezone}</p>
 		<h2>{$timeData.time}</h2>
 		<h3>{$timeData.date}</h3>
-		<!-- Progress Bar -->
-		<div class="h-4 rounded bg-gray-300">
-			<div
-				class="progress-bar h-4 rounded bg-gray-600"
-				style="--dynamic-width: {progressWidth}%"
-			></div>
+		<div class="grid-cols-2">
+			<!-- Percentage (Top Right) -->
+			<div class="mb-2 text-right text-sm font-medium text-gray-800">
+				{todayProgress.progressPercentage}%
+			</div>
+			<!-- Progress Bar -->
+			<div class="h-4 rounded bg-gray-200">
+				<div
+					class="progress-bar h-4 rounded bg-gray-600"
+					style="--dynamic-width: {progressWidth}%"
+				></div>
+			</div>
 		</div>
-		<!-- Percentage (Bottom Right) -->
-		<p class="absolute right-8 mt-2 text-sm font-medium text-gray-800">
-			{todayProgress.progressPercentage}%
-		</p>
+
 		<!-- Textual Info -->
 		<p class="textual-info mt-2 text-sm text-gray-600">
 			{$timeData.todayPassedHours}
 		</p>
 	</div>
-
-	<div class="today-progress px-4 py-2"></div>
 </header>
 
 <style>
 	.timezone {
 		font-size: 1rem;
 		color: #374151;
-	}
-	.today-progress {
-		background: inherit; /* Inherit the background from the parent */
 	}
 	.progress-bar {
 		width: 0%;

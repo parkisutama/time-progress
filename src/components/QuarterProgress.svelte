@@ -19,13 +19,20 @@
 	}
 </script>
 
-<div class="quarter-progress px-4 py-2">
-	<p class="text-sm text-gray-600">
-		{quarterProgress.start.toFormat('dd MMMM yyyy')} - {quarterProgress.end.toFormat(
-			'dd MMMM yyyy'
-		)}
-	</p>
+<div class="quarter-progress rounded-md bg-white px-4 py-4 shadow-md">
 	<div class="relative mt-2">
+		<div class="grid-cols-2">
+			<div class="text-left text-sm text-gray-600">
+				[Q{quarterProgress.start.toFormat('q')}]
+				{quarterProgress.start.toFormat('dd MMMM yyyy')} - {quarterProgress.end.toFormat(
+					'dd MMMM yyyy'
+				)}
+			</div>
+			<!-- Percentage (Top Right) -->
+			<div class="py-2 text-right text-sm font-medium text-gray-800">
+				{quarterProgress.progressPercentage}%
+			</div>
+		</div>
 		<!-- Progress Bar -->
 		<div class="h-4 w-full rounded bg-gray-300">
 			<div
@@ -33,14 +40,11 @@
 				style="--dynamic-width: {progressWidth}%;"
 			></div>
 		</div>
-		<!-- Percentage (Bottom Right) -->
-		<span class="absolute bottom-0 right-0 text-sm font-medium text-gray-800">
-			{quarterProgress.progressPercentage}%
-		</span>
+
 		<!-- Textual Info -->
 		<p class="textual-info mt-2 text-sm text-gray-600">
-			quarter: {quarterProgress.passedDays} days, {quarterProgress.remainingDays} remaining ({quarterProgress.passedHours}/{quarterProgress.remainingHours}
-			hours)
+			{quarterProgress.passedDays} d, {quarterProgress.remainingDays} d remaining ({quarterProgress.passedHours}/{quarterProgress.remainingHours}
+			h)
 		</p>
 	</div>
 </div>
