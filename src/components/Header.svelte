@@ -1,41 +1,92 @@
 <script lang="ts">
-    import { timeData } from '../lib/stores.js';
+	import { timeData } from '../lib/stores';
+	import { onMount } from 'svelte';
 
-    // Props for the quote section
-    export let quote: string = "Hidupmu adalah cerminan dari pikiranmu. Jika kamu berpikir positif, maka hidupmu akan positif juga. Jika kamu berpikir negatif, maka hidupmu akan negatif juga.";
-    export let cite: string = "- Dr. Wayne Dyer";
+	// Reactive store subscription for today’s progress
+	let todayProgress = $timeData.progress.day;
+
+	// Animation state for the progress bar
+	let progressWidth = 0;
+
+	//set progressWidth on mount
+	onMount(() => {
+		progressWidth = todayProgress.progressPercentage;
+	});
+
+	// Reactively update progressWidth whenever todayProgress.progressPercentage changes
+	$: if (progressWidth !== todayProgress.progressPercentage) {
+		progressWidth = todayProgress.progressPercentage;
+	}
 </script>
 
-<header class="text-center py-4 mt-4 bg-gray-100 shadow-md">
-    <!-- Quote Section -->
-    <blockquote class="italic text-gray-700 text-center pl-2 md:pl-8 py-2 mx-auto max-w-sm md:max-w-2xl">
-        <p class="text-xs font-semibold">{quote}</p>
-        <cite class="block text-xs text-center mt-2 text-gray-600">{cite}</cite>
-    </blockquote>
-    <!-- Live Clock -->
-    <div>
-        <h2 >{$timeData.time}</h2>
-        <h3 >{$timeData.date}</h3>
-    </div>
+<header class="mt-4 px-4 py-4 text-center">
+	<!-- Live Clock -->
+	<div class="rounded-md bg-white px-4 py-4 shadow-md">
+		<p class="timezone text-center">🌏 {$timeData.timezone}</p>
+		<h2>{$timeData.time}</h2>
+		<h3>{$timeData.date}</h3>
+		<div class="grid-cols-2">
+			<!-- Percentage (Top Right) -->
+			<div class="mb-2 text-right text-sm font-medium text-gray-800">
+				{todayProgress.progressPercentage}%
+			</div>
+			<!-- Progress Bar -->
+			<div class="h-4 rounded bg-gray-200">
+				<div
+					class="progress-bar h-4 rounded bg-gray-600"
+					style="--dynamic-width: {progressWidth}%"
+				></div>
+			</div>
+		</div>
+
+		<!-- Textual Info -->
+		<p class="textual-info mt-2 text-sm text-gray-600">
+			{$timeData.todayPassedHours}
+		</p>
+	</div>
 </header>
 
 <style>
-    blockquote { 
-        padding-left: 1rem;
-    }
+	.timezone {
+		font-size: 1rem;
+		color: #374151;
+	}
+	.progress-bar {
+		width: 0%;
+		animation: fill 1s ease-in-out forwards;
+	}
 
-    h2 {
-        font-size: 2rem;
-        font-weight: 600;
-        color: #1f2937;
-        margin-bottom: 1rem;
-        text-align: center;
-        }
-    h3 {
-        font-size: 1rem;
-        font-weight: 400;
-        color: #1f2937;
-        margin-bottom: 1rem;
-        text-align: center;
-        }
+	.textual-info {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: #374151;
+		margin-bottom: 1rem;
+	}
+
+	/* Define the keyframes */
+	@keyframes fill {
+		from {
+			width: 0%;
+		}
+		to {
+			width: var(--dynamic-width);
+		}
+	}
+	h2 {
+		font-size: 2rem;
+		font-weight: 600;
+		color: #1f2937;
+		margin-bottom: 1rem;
+		text-align: center;
+	}
+	h3 {
+		font-size: 1rem;
+		font-weight: 400;
+		color: #1f2937;
+		margin-bottom: 1rem;
+		text-align: center;
+	}
 </style>

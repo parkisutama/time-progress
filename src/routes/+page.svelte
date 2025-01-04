@@ -1,39 +1,40 @@
 <script>
-    import Header from '../components/Header.svelte';
-    import TodayProgress from '../components/TodayProgress.svelte';
-    import WeekProgress from '../components/WeekProgress.svelte';
+	import Header from '../components/Header.svelte';
+	import Quote from '../components/Quote.svelte';
+	import WeekProgress from '../components/WeekProgress.svelte';
 	import MonthProgress from '../components/MonthProgress.svelte';
-    import QuarterProgress from '../components/QuarterProgress.svelte';
-    import YearProgress from '../components/YearProgress.svelte';
-
+	import QuarterProgress from '../components/QuarterProgress.svelte';
+	import YearProgress from '../components/YearProgress.svelte';
 </script>
 
-<main class=" dashboard container mx-auto px-4 mt-4 my-4 bg-gray-100 shadow-md">
-    <Header 
-    ></Header>
-    <section class="widget">
-        <TodayProgress  />
-    </section>
-    <section class="widget">
-        <WeekProgress />
-    <section>
-        <MonthProgress />
-    </section>
-    <section>
-        <QuarterProgress />
-    </section>
-    <section>
-        <YearProgress />
-    </section>
+<main class="dashboard rounded-xl bg-gray-100 shadow-lg">
+	<div>
+		<div>
+			<section>
+				<Header />
+			</section>
+			<div class="px-4 py-4">
+				<section class="mb-4 bg-white">
+					<WeekProgress />
+				</section>
+				<section class="mb-4 bg-white">
+					<MonthProgress />
+				</section>
+				<section class=" mb-4 bg-white">
+					<QuarterProgress />
+				</section>
+				<section class="mb-4 bg-white">
+					<YearProgress />
+				</section>
+				<section class="shadow-dm rounded-lg px-4 py-4">
+					<Quote />
+				</section>
+			</div>
+		</div>
+	</div>
 </main>
-<style>
-    @media (max-width: 640px) {
-    .dashboard {
-        padding: 1rem;
-    }
 
-    .widget {
-        align-items: flex-start;
-    }
-}
+<style>
+	@media (max-width: 640px) {
+	}
 </style>
