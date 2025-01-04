@@ -1,74 +1,76 @@
 <script lang="ts">
-    import { timeData } from '../lib/stores';
-    import { onMount } from 'svelte';
+	import { timeData } from '../lib/stores';
+	import { onMount } from 'svelte';
 
-    // Reactive store subscription for the week's progress
-    let weekProgress = $timeData.progress.week;
+	// Reactive store subscription for the week's progress
+	let weekProgress = $timeData.progress.week;
 
-    // Animation state for the progress bar
-    let progressWidth = 0;
+	// Animation state for the progress bar
+	let progressWidth = 0;
 
-    // Set progressWidth on mount
-    onMount(() => {
-        progressWidth = weekProgress.progressPercentage;
-    });
+	// Set progressWidth on mount
+	onMount(() => {
+		progressWidth = weekProgress.progressPercentage;
+	});
 
-    // Reactively update progressWidth whenever weekProgress.progressPercentage changes
-    $: if (progressWidth !== weekProgress.progressPercentage) {
-        progressWidth = weekProgress.progressPercentage;
-    }
+	// Reactively update progressWidth whenever weekProgress.progressPercentage changes
+	$: if (progressWidth !== weekProgress.progressPercentage) {
+		progressWidth = weekProgress.progressPercentage;
+	}
 </script>
 
-<div class="week-progress py-4">
-    <p class="text-sm text-gray-600">
-        {weekProgress.start.toFormat('dd MMMM yyyy')} - {weekProgress.end.toFormat('dd MMMM yyyy')} [Week {weekProgress.start.toFormat('W')}]
-    </p>
-    <div class="mt-2 relative">
-        <!-- Progress Bar -->
-        <div class="w-full bg-gray-300 rounded h-4">
-            <div
-                class="bg-gray-600 h-4 rounded progress-bar"
-                style="--dynamic-width: {progressWidth}%;"
-            ></div>
-        </div>
-        <!-- Percentage (Bottom Right) -->
-        <span class="absolute bottom-0 right-0 text-sm font-medium text-gray-800">
-            {weekProgress.progressPercentage}%
-        </span>
-        <!-- Textual Info -->
-        <p class="textual-info mt-2 text-sm text-gray-600">
-            week {weekProgress.start.toFormat('W')}: {weekProgress.passedDays} days, {weekProgress.remainingDays} days remaining ({weekProgress.passedHours}/{weekProgress.remainingHours} hours)
-        </p>
-    </div>
+<div class="week-progress px-4 py-2">
+	<p class="text-sm text-gray-600">
+		{weekProgress.start.toFormat('dd MMMM yyyy')} - {weekProgress.end.toFormat('dd MMMM yyyy')} [Week
+		{weekProgress.start.toFormat('W')}]
+	</p>
+	<div class="relative mt-2">
+		<!-- Progress Bar -->
+		<div class="h-4 w-full rounded bg-gray-300">
+			<div
+				class="progress-bar h-4 rounded bg-gray-600"
+				style="--dynamic-width: {progressWidth}%;"
+			></div>
+		</div>
+		<!-- Percentage (Bottom Right) -->
+		<span class="absolute bottom-0 right-0 text-sm font-medium text-gray-800">
+			{weekProgress.progressPercentage}%
+		</span>
+		<!-- Textual Info -->
+		<p class="textual-info mt-2 text-sm text-gray-600">
+			week {weekProgress.start.toFormat('W')}: {weekProgress.passedDays} days, {weekProgress.remainingDays}
+			days remaining ({weekProgress.passedHours}/{weekProgress.remainingHours} hours)
+		</p>
+	</div>
 </div>
 
 <style>
-    .week-progress {
-        background: inherit; /* Inherit the background from the parent */
-    }
+	.week-progress {
+		background: inherit; /* Inherit the background from the parent */
+	}
 
-    .progress-bar {
-        width: 0%;
-        animation: fill 1s ease-in-out forwards;
-    }
+	.progress-bar {
+		width: 0%;
+		animation: fill 1s ease-in-out forwards;
+	}
 
-    .textual-info {
-        display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: #374151;
-            margin-bottom: 1rem;
-    }
+	.textual-info {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: #374151;
+		margin-bottom: 1rem;
+	}
 
-    /* Define the keyframes */
-    @keyframes fill {
-        from {
-            width: 0%;
-        }
-        to {
-            width: var(--dynamic-width);
-        }
-    }
+	/* Define the keyframes */
+	@keyframes fill {
+		from {
+			width: 0%;
+		}
+		to {
+			width: var(--dynamic-width);
+		}
+	}
 </style>

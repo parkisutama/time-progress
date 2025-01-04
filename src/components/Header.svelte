@@ -2,7 +2,7 @@
 	import { timeData } from '../lib/stores.js';
 </script>
 
-<header class="mt-aut mx-auto px-2 py-8 text-center">
+<header class="px-4 py-4 text-center">
 	<!-- Live Clock -->
 	<div class="rounded-md bg-white px-4 py-4 shadow-md">
 		<h2>{$timeData.time}</h2>
