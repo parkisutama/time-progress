@@ -35,8 +35,9 @@
         <span class="absolute bottom-0 right-0 text-sm font-medium text-gray-800">
             {quarterProgress.progressPercentage}%
         </span>
-        <p class="mt-2 text-sm text-gray-600">
-            {quarterProgress.passedDays} days ({quarterProgress.passedHours} hours) passed, {quarterProgress.remainingDays} days ({quarterProgress.remainingHours} hours) remaining
+        <!-- Textual Info -->
+        <p class="textual-info mt-2 text-sm text-gray-600">
+            quarter: {quarterProgress.passedDays} days, {quarterProgress.remainingDays} remaining ({quarterProgress.passedHours}/{quarterProgress.remainingHours} hours)
         </p>
     </div>
 </div>
@@ -49,6 +50,16 @@
     .progress-bar {
         width: 0%; /* Start at 0% */
         animation: fill 1s ease-in-out forwards;
+    }
+
+    .textual-info {
+        display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 1rem;
     }
 
     /* Define the keyframes */

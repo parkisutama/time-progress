@@ -20,7 +20,7 @@
 </script>
 
 <div class="today-progress py-4">
-    <!-- <h2 class="text-xl font-bold text-blue-600">Today's Progress</h2> -->
+    <!-- <h2 class="text-xl font-bold text-gray-600">Today's Progress</h2> -->
     <div class="mt-2 relative">
         <!-- Progress Bar -->
         <div class="w-full bg-gray-300 rounded h-4">
@@ -31,12 +31,12 @@
         </div>
     <div>
         <!-- Percentage (Bottom Right) -->
-        <span class="text-sm absolute bottom-0 right-0 font-medium text-gray-800">
+        <span class="text-sm absolute right-0 font-medium text-gray-800">
             {todayProgress.progressPercentage}%
         </span>
         <!-- Textual Info -->
-        <p class="mt-2 text-sm text-gray-600">
-            {todayProgress.passedHours} hours passed, {todayProgress.remainingHours} hours remaining
+        <p class= "textual-info mt-2 text-sm text-gray-600">
+            today: {todayProgress.passedHours} hours, {todayProgress.remainingHours} hours remaining
         </p>
     </div>
     </div>
@@ -49,6 +49,16 @@
     .progress-bar {
         width: 0%;
         animation: fill 1s ease-in-out forwards;
+    }
+    
+    .textual-info {
+        display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 1rem;
     }
 
     /* Define the keyframes */
