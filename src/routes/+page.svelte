@@ -16,9 +16,6 @@
 			</section>
 			<div class="px-4 py-4">
 				<section class="rounded-lg px-4 py-4 shadow-sm">
-					<TodayProgress />
-				</section>
-				<section class="rounded-lg px-4 py-4 shadow-sm">
 					<WeekProgress />
 				</section>
 				<section class="rounded-lg px-4 py-4 shadow-sm">
