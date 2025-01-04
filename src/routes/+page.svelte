@@ -14,16 +14,16 @@
 				<Header />
 			</section>
 			<div class="px-4 py-4">
-				<section class="bg-white py-2">
+				<section class="mb-4 bg-white">
 					<WeekProgress />
 				</section>
-				<section class="bg-white py-2">
+				<section class="mb-4 bg-white">
 					<MonthProgress />
 				</section>
-				<section class="bg-white py-2">
+				<section class=" mb-4 bg-white">
 					<QuarterProgress />
 				</section>
-				<section class="bg-white py-2">
+				<section class="mb-4 bg-white">
 					<YearProgress />
 				</section>
 				<section class="shadow-dm rounded-lg px-4 py-4">
