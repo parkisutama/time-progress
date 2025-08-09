@@ -1,6 +1,6 @@
 test-results
 node_modules
-
+wrangler.toml
 # Output
 .output
 .vercel

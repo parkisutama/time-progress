@@ -13,7 +13,7 @@
 	});
 </script>
 
-<header class="mt-4 px-4 py-4 text-center">
+<header class="px-0 py-0 text-center">
 	<!-- Live Clock -->
 	<div class="rounded-md bg-white px-4 py-4 shadow-md">
 		<p class="timezone text-center">🌏 {$timeData.timezone}</p>
