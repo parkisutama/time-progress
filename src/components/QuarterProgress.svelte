@@ -1,63 +1,61 @@
 <script lang="ts">
-	import type { PeriodProgress } from '$lib/stores';
+	import { timeData } from '../lib/stores';
 	import { onMount } from 'svelte';
 
-	export let title: string;
-	export let periodProgress: PeriodProgress;
-	export let showWeekNumber = false;
+	// Reactive store subscription for the quarter's progress
+	let quarterProgress = $timeData.progress.quarter;
 
 	// Animation state for the progress bar
 	let progressWidth = 0;
 
 	// Set progressWidth on mount
 	onMount(() => {
-		progressWidth = periodProgress.progressPercentage;
+		progressWidth = quarterProgress.progressPercentage;
 	});
 
-	// Reactively update progressWidth whenever periodProgress.progressPercentage changes
-	$: if (progressWidth !== periodProgress.progressPercentage) {
-		progressWidth = periodProgress.progressPercentage;
+	// Reactively update progressWidth whenever quarterProgress.progressPercentage changes
+	$: if (progressWidth !== quarterProgress.progressPercentage) {
+		progressWidth = quarterProgress.progressPercentage;
 	}
 </script>
 
-<div class="progress-component rounded-md bg-white px-4 py-4 shadow-md">
+<div class="quarter-progress rounded-md bg-white px-4 py-4 shadow-md">
 	<div class="relative mt-2">
 		<div class="grid-cols-2">
 			<div class="text-left text-sm text-gray-600">
-				<span>{title}</span>
-				{#if showWeekNumber}
-					[Week {periodProgress.start.toFormat('WW')}]
-				{/if}
-				{periodProgress.start.toFormat('dd MMMM yyyy')} - {periodProgress.end.toFormat('dd MMMM yyyy')}
+				[Q{quarterProgress.start.toFormat('q')}]
+				{quarterProgress.start.toFormat('dd MMMM yyyy')} - {quarterProgress.end.toFormat(
+					'dd MMMM yyyy'
+				)}
 			</div>
-			<!-- Percentage (Bottom Right) -->
+			<!-- Percentage (Top Right) -->
 			<div class="py-2 text-right text-sm font-medium text-gray-800">
-				{periodProgress.progressPercentage}%
+				{quarterProgress.progressPercentage}%
 			</div>
 		</div>
 		<!-- Progress Bar -->
 		<div class="h-4 w-full rounded bg-gray-300">
 			<div
-				class="progress-bar h-4 rounded bg-gray-600"
+				class="progress-bar h-4 rounded bg-gray-600 transition-all duration-1000 ease-in-out"
 				style="--dynamic-width: {progressWidth}%;"
 			></div>
 		</div>
 
 		<!-- Textual Info -->
 		<p class="textual-info mt-2 text-sm text-gray-600">
-			{periodProgress.passedDays} d, {periodProgress.remainingDays}
-			d remaining ({periodProgress.passedHours}/{periodProgress.remainingHours} h)
+			{quarterProgress.passedDays} d, {quarterProgress.remainingDays} d remaining ({quarterProgress.passedHours}/{quarterProgress.remainingHours}
+			h)
 		</p>
 	</div>
 </div>
 
 <style>
-	.progress-component {
+	.quarter-progress {
 		background: inherit; /* Inherit the background from the parent */
 	}
 
 	.progress-bar {
-		width: 0%;
+		width: 0%; /* Start at 0% */
 		animation: fill 1s ease-in-out forwards;
 	}
 
