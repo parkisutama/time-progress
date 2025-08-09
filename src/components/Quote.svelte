@@ -1,8 +1,8 @@
 <script lang="ts">
 	// Props for the quote section
 	export let quote: string =
-		'Hidupmu adalah cerminan dari pikiranmu. Jika kamu berpikir positif, maka hidupmu akan positif juga. Jika kamu berpikir negatif, maka hidupmu akan negatif juga.';
-	export let cite: string = '- Dr. Wayne Dyer';
+		'We know the world only through the window of our mind. When our mind is noisy, the world is as well.And when our mind is peaceful, the world is, too.Knowing our minds is just as important as trying to change the world.';
+	export let cite: string = '- Haemin Sunim';
 </script>
 
 <!-- Quote Section -->
