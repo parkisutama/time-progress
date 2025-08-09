@@ -38,8 +38,14 @@
 		>
 	</div>
 
-	<div class="mb-1 text-[11px] text-gray-500">{start.toFormat('ff')}</div>
-	<div class="mb-3 text-[11px] text-gray-500">{end.toFormat('ff')}</div>
+	<div class="mb-1 text-[11px] text-gray-500">
+		<span class="font-medium text-gray-600">Start:</span>
+		{start.toFormat('ff')}
+	</div>
+	<div class="mb-3 text-[11px] text-gray-500">
+		<span class="font-medium text-gray-600">End:</span>
+		{end.toFormat('ff')}
+	</div>
 
 	{#if e.detail}
 		<p class="mb-3 line-clamp-3 text-sm text-gray-600">{e.detail}</p>
@@ -48,7 +54,9 @@
 	{#if status === 'upcoming'}
 		<div class="mb-3 text-center text-sm text-gray-700">
 			Starts in
-			<span class="ml-1 text-lg font-semibold">{secondsToHMS(prog.remaining)}</span>
+			<span class="ml-1 text-lg font-semibold"
+				>{secondsToHMS(Math.max(0, start.diff(now, 'seconds').seconds))}</span
+			>
 		</div>
 	{:else if status === 'active'}
 		<div class="mb-2 flex items-center justify-between text-xs text-gray-700">

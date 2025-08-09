@@ -21,23 +21,38 @@
 		return () => clearInterval(id);
 	});
 
-	// Filter active (now between start and end) and sort by urgency: shortest remaining, then soonest start
-	const activeEvents = $derived(
-		events
+	// Home slider: show active and upcoming (exclude completed). Sort by status then urgency
+	function statusWeight(e: EventItem) {
+		const s = DateTime.fromISO(e.start);
+		const en = DateTime.fromISO(e.end);
+		if (now >= s && now <= en) return 0; // active
+		if (now < s) return 1; // upcoming
+		return 2; // complete (will be filtered out)
+	}
+
+	const homeEvents = $derived(
+		[...events]
 			.filter((e) => {
-				const s = DateTime.fromISO(e.start);
 				const en = DateTime.fromISO(e.end);
-				return now >= s && now <= en;
+				return now <= en; // not complete
 			})
 			.sort((a, b) => {
+				const wa = statusWeight(a);
+				const wb = statusWeight(b);
+				if (wa !== wb) return wa - wb; // active first, then upcoming
 				const sa = DateTime.fromISO(a.start);
 				const ea = DateTime.fromISO(a.end);
 				const sb = DateTime.fromISO(b.start);
 				const eb = DateTime.fromISO(b.end);
-				const ra = Math.max(0, ea.diff(now, 'seconds').seconds);
-				const rb = Math.max(0, eb.diff(now, 'seconds').seconds);
-				if (ra !== rb) return ra - rb; // shorter remaining first
-				return sa.toMillis() - sb.toMillis(); // earlier start first
+				if (wa === 0) {
+					// active: shorter remaining first, then earlier start
+					const ra = Math.max(0, ea.diff(now, 'seconds').seconds);
+					const rb = Math.max(0, eb.diff(now, 'seconds').seconds);
+					if (ra !== rb) return ra - rb;
+					return sa.toMillis() - sb.toMillis();
+				}
+				// upcoming: earlier start first
+				return sa.toMillis() - sb.toMillis();
 			})
 	);
 
@@ -183,10 +198,10 @@
 						class="flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain scroll-smooth pr-8 pb-1 sm:pr-12"
 						style="scrollbar-width: none;"
 					>
-						{#if activeEvents.length === 0}
-							<div class="text-sm text-gray-500">No active events</div>
+						{#if homeEvents.length === 0}
+							<div class="text-sm text-gray-500">No upcoming or active events</div>
 						{:else}
-							{#each activeEvents as e}
+							{#each homeEvents as e}
 								<div
 									class="max-w-[85vw] min-w-[80vw] snap-start sm:max-w-[280px] sm:min-w-[260px]"
 									style={isDesktop && headerHeight ? `height:${headerHeight}px` : ''}
