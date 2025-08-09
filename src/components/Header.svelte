@@ -1,22 +1,16 @@
 <script lang="ts">
 	import { timeData } from '../lib/stores';
-	import { onMount } from 'svelte';
 
-	// Reactive store subscription for today’s progress
-	let todayProgress = $timeData.progress.day;
+	// Subscribe to store and derive today's progress (Svelte 5 runes)
+	const todayProgress = $derived($timeData.progress.day);
 
 	// Animation state for the progress bar
-	let progressWidth = 0;
+	let progressWidth = $state(0);
 
-	//set progressWidth on mount
-	onMount(() => {
+	// Keep progressWidth in sync with progress percentage
+	$effect(() => {
 		progressWidth = todayProgress.progressPercentage;
 	});
-
-	// Reactively update progressWidth whenever todayProgress.progressPercentage changes
-	$: if (progressWidth !== todayProgress.progressPercentage) {
-		progressWidth = todayProgress.progressPercentage;
-	}
 </script>
 
 <header class="mt-4 px-4 py-4 text-center">

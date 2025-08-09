@@ -6,7 +6,7 @@
 </script>
 
 <!-- Quote Section -->
-<blockquote class="mx-auto max-w-sm text-center italic text-gray-700 md:max-w-2xl md:pl-8">
+<blockquote class="mx-auto max-w-sm text-center text-gray-700 italic md:max-w-2xl md:pl-8">
 	<p class="py-4 text-xs font-semibold">{quote}</p>
 	<cite class="block py-2 text-center text-xs text-gray-600">{cite}</cite>
 </blockquote>

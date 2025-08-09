@@ -1,22 +1,15 @@
 <script lang="ts">
 	import { timeData } from '../lib/stores';
-	import { onMount } from 'svelte';
 
-	// Reactive store subscription for the year's progress
-	let yearProgress = $timeData.progress.year;
+	// Year progress (Svelte 5 runes)
+	const yearProgress = $derived($timeData.progress.year);
 
 	// Animation state for the progress bar
-	let progressWidth = 0;
+	let progressWidth = $state(0);
 
-	// Set progressWidth on mount
-	onMount(() => {
+	$effect(() => {
 		progressWidth = yearProgress.progressPercentage;
 	});
-
-	// Reactively update progressWidth whenever yearProgress.progressPercentage changes
-	$: if (progressWidth !== yearProgress.progressPercentage) {
-		progressWidth = yearProgress.progressPercentage;
-	}
 </script>
 
 <div class="year-progress rounded-md bg-white px-4 py-4 shadow-md">

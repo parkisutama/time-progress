@@ -26,8 +26,8 @@ const config = {
 			}
 		}),
 		paths: {
-			base: '', // Default; no need to change for Cloudflare Pages
-		},
+			base: '' // Default; no need to change for Cloudflare Pages
+		}
 	},
 
 	extensions: ['.svelte', '.svx']
