@@ -1,3 +1,9 @@
+---
+title: Progressive Time
+created: 2026-09-16T23:20:03+07:00
+modified: 2026-09-16T23:55:28+07:00
+---
+
 # Progressive Time
 
 Build on svelte and tailwind css, this project display current time with progress by periodic to see how many day and hour pass!
