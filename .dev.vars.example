@@ -1,0 +1,2 @@
+# Local development only. Copy to `.dev.vars` and use a non-production identity.
+DEV_BYPASS_EMAIL=developer@example.com

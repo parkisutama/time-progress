@@ -1,0 +1,35 @@
+# Threat model
+
+## Scope
+
+This model covers the SvelteKit application deployed to Cloudflare Workers, Cloudflare Access identity headers, browser storage, and the `EVENTS` KV namespace.
+
+## Assets
+
+- User identity email supplied by Cloudflare Access.
+- Per-user event names, details, and timestamps.
+- Integrity and availability of deployed Worker code and its dependency chain.
+
+## Trust boundaries
+
+1. Browser to Worker: request bodies, headers, and client state are untrusted.
+2. Cloudflare Access to Worker: identity is accepted only behind the configured Access policy.
+3. Worker to KV: stored JSON may be malformed or stale and must be revalidated when read.
+4. Git and registry to CI: workflow actions, packages, and lockfile changes are supply-chain input.
+5. AI agent to repository: generated code and commands require the same review and verification as human work.
+
+## Primary threats and controls
+
+| Threat | Current control | Residual risk |
+| --- | --- | --- |
+| Identity spoofing | Cloudflare Access protects `/events`; handlers also require `locals.user` | The Access policy and public Worker routes must remain correctly configured |
+| Development bypass in production | Bypass works only for localhost and `.dev.vars` is ignored | A future auth change could reintroduce a production bypass; tests guard the current contract |
+| Cross-user data access | KV keys are derived from the authenticated email | Email normalization and identity-provider changes require review |
+| Malformed or over-posted event data | Strict Valibot schemas validate writes and KV reads | Request-size and application-level rate limits are provided by platform configuration, not this code |
+| XSS and clickjacking | Svelte escapes text; browser hardening headers deny framing and MIME sniffing | A strict CSP still needs browser validation before enforcement |
+| Dependency compromise | One Bun lockfile, frozen CI install, audit, Dependabot | Audits detect known advisories, not a newly malicious release |
+| AI-generated unsafe changes | `AGENTS.md`, review checklist, explicit approval gates, CI | Human review remains required for security and deployment decisions |
+
+## Review triggers
+
+Revisit this document when authentication, storage, external services, CORS, file handling, AI features, or deployment exposure changes.
