@@ -1,33 +1,33 @@
 <script lang="ts">
-	import { DateTime, Duration } from 'luxon';
-	import type { EventItem } from '$lib/events';
-	import { getEventStatus, eventProgress, eventsStore } from '$lib/events';
-	import { createEventDispatcher } from 'svelte';
+import { DateTime, Duration } from 'luxon';
+import { createEventDispatcher } from 'svelte';
+import type { EventItem } from '$lib/events';
+import { eventProgress, eventsStore, getEventStatus } from '$lib/events';
 
-	const dispatch = createEventDispatcher<{ edit: void; view: void }>();
+const dispatch = createEventDispatcher<{ edit: undefined; view: undefined }>();
 
-	const { e } = $props<{ e: EventItem }>();
+const { e } = $props<{ e: EventItem }>();
 
-	// Live time ticker
-	let now = $state(DateTime.now());
-	let timer: any;
-	$effect(() => {
-		timer = setInterval(() => (now = DateTime.now()), 1000);
-		return () => clearInterval(timer);
-	});
+// Live time ticker
+let now = $state(DateTime.now());
+let timer: ReturnType<typeof setInterval>;
+$effect(() => {
+	timer = setInterval(() => (now = DateTime.now()), 1000);
+	return () => clearInterval(timer);
+});
 
-	const start = $derived(DateTime.fromISO(e.start));
-	const end = $derived(DateTime.fromISO(e.end));
-	const status = $derived(getEventStatus(now, start, end));
-	const prog = $derived(eventProgress(now, start, end));
+const start = $derived(DateTime.fromISO(e.start));
+const end = $derived(DateTime.fromISO(e.end));
+const status = $derived(getEventStatus(now, start, end));
+const prog = $derived(eventProgress(now, start, end));
 
-	function secondsToHMS(sec: number) {
-		const d = Duration.fromObject({ seconds: sec }).shiftTo('hours', 'minutes', 'seconds');
-		const h = Math.max(0, Math.floor(d.hours ?? 0));
-		const m = Math.max(0, Math.floor(d.minutes ?? 0));
-		const s = Math.max(0, Math.floor(d.seconds ?? 0));
-		return `${h}h ${m}m ${s}s`;
-	}
+function secondsToHMS(sec: number) {
+	const d = Duration.fromObject({ seconds: sec }).shiftTo('hours', 'minutes', 'seconds');
+	const h = Math.max(0, Math.floor(d.hours ?? 0));
+	const m = Math.max(0, Math.floor(d.minutes ?? 0));
+	const s = Math.max(0, Math.floor(d.seconds ?? 0));
+	return `${h}h ${m}m ${s}s`;
+}
 </script>
 
 <div class="flex h-full flex-col rounded-lg bg-white p-4 shadow-md">
@@ -73,12 +73,14 @@
 	<div class="mt-auto flex items-center justify-end gap-1 pt-4">
 		<!-- View -->
 		<button
+			type="button"
 			class="rounded p-1.5 hover:bg-gray-100"
 			title="View"
 			aria-label="View"
 			onclick={() => dispatch('view')}
 		>
 			<svg
+				aria-hidden="true"
 				xmlns="http://www.w3.org/2000/svg"
 				viewBox="0 0 24 24"
 				fill="currentColor"
@@ -92,12 +94,14 @@
 		</button>
 		<!-- Edit -->
 		<button
+			type="button"
 			class="rounded p-1.5 hover:bg-gray-100"
 			title="Edit"
 			aria-label="Edit"
 			onclick={() => dispatch('edit')}
 		>
 			<svg
+				aria-hidden="true"
 				xmlns="http://www.w3.org/2000/svg"
 				viewBox="0 0 24 24"
 				fill="currentColor"
@@ -111,12 +115,14 @@
 		</button>
 		<!-- Delete -->
 		<button
+			type="button"
 			class="rounded p-1.5 hover:bg-red-50"
 			title="Delete"
 			aria-label="Delete"
 			onclick={() => eventsStore.remove(e.id)}
 		>
 			<svg
+				aria-hidden="true"
 				xmlns="http://www.w3.org/2000/svg"
 				viewBox="0 0 24 24"
 				fill="currentColor"

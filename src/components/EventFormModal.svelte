@@ -1,58 +1,65 @@
 <script lang="ts">
-	import type { EventItem } from '$lib/events';
-	import { eventsStore } from '$lib/events';
-	import { createEventDispatcher } from 'svelte';
-	import { DateTime } from 'luxon';
+import { DateTime } from 'luxon';
+import { createEventDispatcher } from 'svelte';
+import type { EventItem } from '$lib/events';
+import { eventsStore } from '$lib/events';
 
-	const { editing, readonly = false } = $props<{ editing: EventItem | null; readonly?: boolean }>();
-	const dispatch = createEventDispatcher<{ close: void }>();
+const { editing, readonly = false } = $props<{ editing: EventItem | null; readonly?: boolean }>();
+const dispatch = createEventDispatcher<{ close: undefined }>();
 
-	let name = $state(editing?.name ?? '');
-	let detail = $state(editing?.detail ?? '');
+let name = $state('');
+let detail = $state('');
 
-	function isoToLocalInput(iso: string) {
-		const dt = DateTime.fromISO(iso);
-		return dt.isValid ? dt.toFormat("yyyy-LL-dd'T'HH:mm") : '';
+function isoToLocalInput(iso: string) {
+	const dt = DateTime.fromISO(iso);
+	return dt.isValid ? dt.toFormat("yyyy-LL-dd'T'HH:mm") : '';
+}
+function localInputToIso(localStr: string) {
+	const dt = DateTime.fromISO(localStr);
+	return dt.isValid ? dt.toISO() : '';
+}
+
+let startLocal = $state('');
+let endLocal = $state('');
+
+$effect(() => {
+	name = editing?.name ?? '';
+	detail = editing?.detail ?? '';
+	startLocal = isoToLocalInput(editing?.start ?? DateTime.now().toISO());
+	endLocal = isoToLocalInput(editing?.end ?? DateTime.now().plus({ hours: 1 }).toISO());
+});
+
+const zoneLabel = DateTime.now().toFormat('ZZZZ');
+
+const invalidReason = $derived(
+	(() => {
+		const s = DateTime.fromISO(startLocal);
+		const e = DateTime.fromISO(endLocal);
+		if (!s.isValid) return 'Invalid start date/time';
+		if (!e.isValid) return 'Invalid end date/time';
+		if (e <= s) return 'End must be after start';
+		return '';
+	})()
+);
+const idName = 'evt-name';
+const idDetail = 'evt-detail';
+const idStart = 'evt-start';
+const idEnd = 'evt-end';
+
+function close() {
+	dispatch('close');
+}
+function save() {
+	const startIso = localInputToIso(startLocal);
+	const endIso = localInputToIso(endLocal);
+	if (!startIso || !endIso || (invalidReason && invalidReason.length > 0)) return;
+	if (editing) {
+		eventsStore.updateItem(editing.id, { name, detail, start: startIso, end: endIso });
+	} else {
+		eventsStore.add({ name, detail, start: startIso, end: endIso });
 	}
-	function localInputToIso(localStr: string) {
-		const dt = DateTime.fromISO(localStr);
-		return dt.isValid ? dt.toISO() : '';
-	}
-
-	let startLocal = $state(isoToLocalInput(editing?.start ?? DateTime.now().toISO()));
-	let endLocal = $state(isoToLocalInput(editing?.end ?? DateTime.now().plus({ hours: 1 }).toISO()));
-
-	const zoneLabel = DateTime.now().toFormat('ZZZZ');
-
-	const invalidReason = $derived(
-		(() => {
-			const s = DateTime.fromISO(startLocal);
-			const e = DateTime.fromISO(endLocal);
-			if (!s.isValid) return 'Invalid start date/time';
-			if (!e.isValid) return 'Invalid end date/time';
-			if (e <= s) return 'End must be after start';
-			return '';
-		})()
-	);
-	const idName = 'evt-name';
-	const idDetail = 'evt-detail';
-	const idStart = 'evt-start';
-	const idEnd = 'evt-end';
-
-	function close() {
-		dispatch('close');
-	}
-	function save() {
-		const startIso = localInputToIso(startLocal);
-		const endIso = localInputToIso(endLocal);
-		if (!startIso || !endIso || (invalidReason && invalidReason.length > 0)) return;
-		if (editing) {
-			eventsStore.updateItem(editing.id, { name, detail, start: startIso, end: endIso });
-		} else {
-			eventsStore.add({ name, detail, start: startIso, end: endIso });
-		}
-		close();
-	}
+	close();
+}
 </script>
 
 <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -66,7 +73,7 @@
 					class="w-full rounded border px-3 py-2"
 					bind:value={name}
 					disabled={readonly}
-				/>
+				>
 			</div>
 			<div>
 				<label class="mb-1 block text-sm" for={idDetail}>Detail</label>
@@ -88,7 +95,7 @@
 						bind:value={startLocal}
 						step="60"
 						disabled={readonly}
-					/>
+					>
 					<div class="mt-1 text-[11px] text-gray-500">Time zone: {zoneLabel}</div>
 				</div>
 				<div>
@@ -101,7 +108,7 @@
 						step="60"
 						min={startLocal}
 						disabled={readonly}
-					/>
+					>
 					<div class="mt-1 text-[11px] text-gray-500">Time zone: {zoneLabel}</div>
 				</div>
 			</div>
@@ -112,13 +119,16 @@
 			{/if}
 		</div>
 		<div class="mt-4 flex justify-end gap-2">
-			<button class="rounded border px-3 py-2" onclick={close}>Close</button>
+			<button type="button" class="rounded border px-3 py-2" onclick={close}>Close</button>
 			{#if !readonly}
 				<button
+					type="button"
 					class="rounded bg-gray-800 px-3 py-2 text-white disabled:opacity-50"
 					disabled={!!invalidReason}
-					onclick={save}>Save</button
+					onclick={save}
 				>
+					Save
+				</button>
 			{/if}
 		</div>
 	</div>

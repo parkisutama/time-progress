@@ -1,16 +1,16 @@
 <script lang="ts">
-	import { timeData } from '../lib/stores';
+import { timeData } from '../lib/stores';
 
-	// Subscribe to store and derive today's progress (Svelte 5 runes)
-	const todayProgress = $derived($timeData.progress.day);
+// Subscribe to store and derive today's progress (Svelte 5 runes)
+const todayProgress = $derived($timeData.progress.day);
 
-	// Animation state for the progress bar
-	let progressWidth = $state(0);
+// Animation state for the progress bar
+let progressWidth = $state(0);
 
-	// Keep progressWidth in sync with progress percentage
-	$effect(() => {
-		progressWidth = todayProgress.progressPercentage;
-	});
+// Keep progressWidth in sync with progress percentage
+$effect(() => {
+	progressWidth = todayProgress.progressPercentage;
+});
 </script>
 
 <header class="px-0 py-0 text-center">
@@ -41,46 +41,46 @@
 </header>
 
 <style>
-	.timezone {
-		font-size: 1rem;
-		color: #374151;
-	}
-	.progress-bar {
+.timezone {
+	font-size: 1rem;
+	color: #374151;
+}
+.progress-bar {
+	width: 0%;
+	animation: fill 1s ease-in-out forwards;
+}
+
+.textual-info {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: #374151;
+	margin-bottom: 1rem;
+}
+
+/* Define the keyframes */
+@keyframes fill {
+	from {
 		width: 0%;
-		animation: fill 1s ease-in-out forwards;
 	}
-
-	.textual-info {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		font-size: 0.875rem;
-		font-weight: 500;
-		color: #374151;
-		margin-bottom: 1rem;
+	to {
+		width: var(--dynamic-width);
 	}
-
-	/* Define the keyframes */
-	@keyframes fill {
-		from {
-			width: 0%;
-		}
-		to {
-			width: var(--dynamic-width);
-		}
-	}
-	h2 {
-		font-size: 2rem;
-		font-weight: 600;
-		color: #1f2937;
-		margin-bottom: 1rem;
-		text-align: center;
-	}
-	h3 {
-		font-size: 1rem;
-		font-weight: 400;
-		color: #1f2937;
-		margin-bottom: 1rem;
-		text-align: center;
-	}
+}
+h2 {
+	font-size: 2rem;
+	font-weight: 600;
+	color: #1f2937;
+	margin-bottom: 1rem;
+	text-align: center;
+}
+h3 {
+	font-size: 1rem;
+	font-weight: 400;
+	color: #1f2937;
+	margin-bottom: 1rem;
+	text-align: center;
+}
 </style>

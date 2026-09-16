@@ -1,22 +1,23 @@
 <script lang="ts">
-	import { timeData } from '../lib/stores';
+import { timeData } from '../lib/stores';
 
-	// Year progress (Svelte 5 runes)
-	const yearProgress = $derived($timeData.progress.year);
+// Year progress (Svelte 5 runes)
+const yearProgress = $derived($timeData.progress.year);
 
-	// Animation state for the progress bar
-	let progressWidth = $state(0);
+// Animation state for the progress bar
+let progressWidth = $state(0);
 
-	$effect(() => {
-		progressWidth = yearProgress.progressPercentage;
-	});
+$effect(() => {
+	progressWidth = yearProgress.progressPercentage;
+});
 </script>
 
 <div class="year-progress rounded-md bg-white px-4 py-4 shadow-md">
 	<div class="relative mt-2">
 		<div class="grid-cols-2">
 			<div class=" text-left text-sm text-gray-600">
-				{yearProgress.start.toFormat('dd MMMM yyyy')} - {yearProgress.end.toFormat('dd MMMM yyyy')}
+				{yearProgress.start.toFormat('dd MMMM yyyy')}
+				- {yearProgress.end.toFormat('dd MMMM yyyy')}
 			</div>
 			<!-- Percentage (Top Right) -->
 			<div class="py-2 text-right text-sm font-medium text-gray-800">
@@ -32,39 +33,40 @@
 		</div>
 		<!-- Textual Info -->
 		<p class="textual-info mt-2 text-sm text-gray-800">
-			{yearProgress.passedDays} d, {yearProgress.remainingDays} d ({yearProgress.passedHours}/{yearProgress.remainingHours}
+			{yearProgress.passedDays}
+			d, {yearProgress.remainingDays} d ({yearProgress.passedHours}/{yearProgress.remainingHours}
 			h)
 		</p>
 	</div>
 </div>
 
 <style>
-	.year-progress {
-		background: inherit; /* Inherit the background from the parent */
-	}
+.year-progress {
+	background: inherit; /* Inherit the background from the parent */
+}
 
-	.progress-bar {
-		width: 0%; /* Start at 0% */
-		animation: fill 1s ease-in-out forwards;
-	}
+.progress-bar {
+	width: 0%; /* Start at 0% */
+	animation: fill 1s ease-in-out forwards;
+}
 
-	.textual-info {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		font-size: 0.875rem;
-		font-weight: 500;
-		color: #374151;
-		margin-bottom: 1rem;
-	}
+.textual-info {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: #374151;
+	margin-bottom: 1rem;
+}
 
-	/* Define the keyframes */
-	@keyframes fill {
-		from {
-			width: 0%;
-		}
-		to {
-			width: var(--dynamic-width);
-		}
+/* Define the keyframes */
+@keyframes fill {
+	from {
+		width: 0%;
 	}
+	to {
+		width: var(--dynamic-width);
+	}
+}
 </style>

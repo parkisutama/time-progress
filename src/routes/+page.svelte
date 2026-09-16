@@ -1,126 +1,126 @@
 <script lang="ts">
-	import Header from '../components/Header.svelte';
-	import Quote from '../components/Quote.svelte';
-	import WeekProgress from '../components/WeekProgress.svelte';
-	import MonthProgress from '../components/MonthProgress.svelte';
-	import QuarterProgress from '../components/QuarterProgress.svelte';
-	import YearProgress from '../components/YearProgress.svelte';
-	import EventCard from '../components/EventCard.svelte';
-	import EventFormModal from '../components/EventFormModal.svelte';
-	import { eventsStore } from '../lib/events';
-	import { DateTime } from 'luxon';
-	import type { EventItem } from '../lib/events';
+import { DateTime } from 'luxon';
+import EventCard from '../components/EventCard.svelte';
+import EventFormModal from '../components/EventFormModal.svelte';
+import Header from '../components/Header.svelte';
+import MonthProgress from '../components/MonthProgress.svelte';
+import QuarterProgress from '../components/QuarterProgress.svelte';
+import Quote from '../components/Quote.svelte';
+import WeekProgress from '../components/WeekProgress.svelte';
+import YearProgress from '../components/YearProgress.svelte';
+import type { EventItem } from '../lib/events';
+import { eventsStore } from '../lib/events';
 
-	// Runes
-	const events = $derived($eventsStore);
+// Runes
+const events = $derived($eventsStore);
 
-	// ticking clock to refresh active filter (every 60s is enough)
-	let now = $state(DateTime.now());
-	$effect(() => {
-		const id = setInterval(() => (now = DateTime.now()), 60_000);
-		return () => clearInterval(id);
-	});
+// ticking clock to refresh active filter (every 60s is enough)
+let now = $state(DateTime.now());
+$effect(() => {
+	const id = setInterval(() => (now = DateTime.now()), 60_000);
+	return () => clearInterval(id);
+});
 
-	// Home slider: show active and upcoming (exclude completed). Sort by status then urgency
-	function statusWeight(e: EventItem) {
-		const s = DateTime.fromISO(e.start);
-		const en = DateTime.fromISO(e.end);
-		if (now >= s && now <= en) return 0; // active
-		if (now < s) return 1; // upcoming
-		return 2; // complete (will be filtered out)
-	}
+// Home slider: show active and upcoming (exclude completed). Sort by status then urgency
+function statusWeight(e: EventItem) {
+	const s = DateTime.fromISO(e.start);
+	const en = DateTime.fromISO(e.end);
+	if (now >= s && now <= en) return 0; // active
+	if (now < s) return 1; // upcoming
+	return 2; // complete (will be filtered out)
+}
 
-	const homeEvents = $derived(
-		[...events]
-			.filter((e) => {
-				const en = DateTime.fromISO(e.end);
-				return now <= en; // not complete
-			})
-			.sort((a, b) => {
-				const wa = statusWeight(a);
-				const wb = statusWeight(b);
-				if (wa !== wb) return wa - wb; // active first, then upcoming
-				const sa = DateTime.fromISO(a.start);
-				const ea = DateTime.fromISO(a.end);
-				const sb = DateTime.fromISO(b.start);
-				const eb = DateTime.fromISO(b.end);
-				if (wa === 0) {
-					// active: shorter remaining first, then earlier start
-					const ra = Math.max(0, ea.diff(now, 'seconds').seconds);
-					const rb = Math.max(0, eb.diff(now, 'seconds').seconds);
-					if (ra !== rb) return ra - rb;
-					return sa.toMillis() - sb.toMillis();
-				}
-				// upcoming: earlier start first
+const homeEvents = $derived(
+	[...events]
+		.filter((e) => {
+			const en = DateTime.fromISO(e.end);
+			return now <= en; // not complete
+		})
+		.sort((a, b) => {
+			const wa = statusWeight(a);
+			const wb = statusWeight(b);
+			if (wa !== wb) return wa - wb; // active first, then upcoming
+			const sa = DateTime.fromISO(a.start);
+			const ea = DateTime.fromISO(a.end);
+			const sb = DateTime.fromISO(b.start);
+			const eb = DateTime.fromISO(b.end);
+			if (wa === 0) {
+				// active: shorter remaining first, then earlier start
+				const ra = Math.max(0, ea.diff(now, 'seconds').seconds);
+				const rb = Math.max(0, eb.diff(now, 'seconds').seconds);
+				if (ra !== rb) return ra - rb;
 				return sa.toMillis() - sb.toMillis();
-			})
-	);
+			}
+			// upcoming: earlier start first
+			return sa.toMillis() - sb.toMillis();
+		})
+);
 
-	let sliderEl: HTMLElement | undefined;
-	let headerEl: HTMLElement | undefined;
+let sliderEl: HTMLElement | undefined;
+let headerEl: HTMLElement | undefined;
 
-	// quick-create modal from homepage
-	let showModal = $state(false);
-	let editing: EventItem | null = $state(null);
-	let modalReadonly = $state(false);
+// quick-create modal from homepage
+let showModal = $state(false);
+let editing: EventItem | null = $state(null);
+let modalReadonly = $state(false);
 
-	// responsive scroll step based on card width
-	let scrollStep = $state(260);
-	let hasPrev = $state(false);
-	let hasNext = $state(false);
-	let headerHeight = $state<number | null>(null);
-	let isDesktop = $state(false);
+// responsive scroll step based on card width
+let scrollStep = $state(260);
+let hasPrev = $state(false);
+let hasNext = $state(false);
+let headerHeight = $state<number | null>(null);
+let isDesktop = $state(false);
 
-	function updateArrows() {
-		if (!sliderEl) return;
-		const { scrollLeft, scrollWidth, clientWidth } = sliderEl;
-		hasPrev = scrollLeft > 2;
-		hasNext = scrollLeft + clientWidth < scrollWidth - 2;
-	}
+function updateArrows() {
+	if (!sliderEl) return;
+	const { scrollLeft, scrollWidth, clientWidth } = sliderEl;
+	hasPrev = scrollLeft > 2;
+	hasNext = scrollLeft + clientWidth < scrollWidth - 2;
+}
 
-	$effect(() => {
-		if (!sliderEl) return;
-		const update = () => {
-			const first = sliderEl?.querySelector(':scope > div') as HTMLElement | null;
-			if (first) scrollStep = first.offsetWidth + 16; // + gap-4 (16px)
-			updateArrows();
-		};
-		update();
-		const ro = new ResizeObserver(update);
-		ro.observe(sliderEl);
-		sliderEl.addEventListener('scroll', updateArrows, { passive: true });
-		return () => {
-			ro.disconnect();
-			sliderEl?.removeEventListener('scroll', updateArrows);
-		};
-	});
+$effect(() => {
+	if (!sliderEl) return;
+	const update = () => {
+		const first = sliderEl?.querySelector(':scope > div') as HTMLElement | null;
+		if (first) scrollStep = first.offsetWidth + 16; // + gap-4 (16px)
+		updateArrows();
+	};
+	update();
+	const ro = new ResizeObserver(update);
+	ro.observe(sliderEl);
+	sliderEl.addEventListener('scroll', updateArrows, { passive: true });
+	return () => {
+		ro.disconnect();
+		sliderEl?.removeEventListener('scroll', updateArrows);
+	};
+});
 
-	// track header height to match card height (desktop only)
-	$effect(() => {
-		if (!headerEl) return;
-		const set = () => (headerHeight = headerEl?.offsetHeight ?? null);
-		set();
-		const ro = new ResizeObserver(set);
-		ro.observe(headerEl);
-		return () => ro.disconnect();
-	});
+// track header height to match card height (desktop only)
+$effect(() => {
+	if (!headerEl) return;
+	const set = () => (headerHeight = headerEl?.offsetHeight ?? null);
+	set();
+	const ro = new ResizeObserver(set);
+	ro.observe(headerEl);
+	return () => ro.disconnect();
+});
 
-	// watch viewport for desktop breakpoint (sm: 640px)
-	$effect(() => {
-		if (typeof window === 'undefined') return;
-		const mql = window.matchMedia('(min-width: 640px)');
-		const set = () => (isDesktop = mql.matches);
-		set();
-		mql.addEventListener('change', set);
-		return () => mql.removeEventListener('change', set);
-	});
+// watch viewport for desktop breakpoint (sm: 640px)
+$effect(() => {
+	if (typeof window === 'undefined') return;
+	const mql = window.matchMedia('(min-width: 640px)');
+	const set = () => (isDesktop = mql.matches);
+	set();
+	mql.addEventListener('change', set);
+	return () => mql.removeEventListener('change', set);
+});
 
-	function prev() {
-		sliderEl?.scrollBy({ left: -scrollStep, behavior: 'smooth' });
-	}
-	function next() {
-		sliderEl?.scrollBy({ left: scrollStep, behavior: 'smooth' });
-	}
+function prev() {
+	sliderEl?.scrollBy({ left: -scrollStep, behavior: 'smooth' });
+}
+function next() {
+	sliderEl?.scrollBy({ left: scrollStep, behavior: 'smooth' });
+}
 </script>
 
 <main class="min-h-screen overflow-x-hidden bg-gray-50">
@@ -136,11 +136,15 @@
 					class="flex h-9 w-9 items-center justify-center rounded border bg-white p-0 shadow-sm"
 				>
 					<svg
+						aria-hidden="true"
 						xmlns="http://www.w3.org/2000/svg"
 						viewBox="0 0 24 24"
 						fill="currentColor"
-						class="h-5 w-5 text-gray-700"><path d="M12 3 3 10h2v10h6V14h2v6h6V10h2L12 3Z" /></svg
+						class="h-5 w-5 text-gray-700"
 					>
+						<path d="M12 3 3 10h2v10h6V14h2v6h6V10h2L12 3Z" />
+					</svg>
+					<span class="sr-only">Home</span>
 				</a>
 				<a
 					href="/events"
@@ -149,43 +153,56 @@
 					class="flex h-9 w-9 items-center justify-center rounded border bg-white p-0 shadow-sm"
 				>
 					<svg
+						aria-hidden="true"
 						xmlns="http://www.w3.org/2000/svg"
 						viewBox="0 0 24 24"
 						fill="currentColor"
 						class="h-5 w-5 text-gray-700"
-						><path d="M4 6h16v2H4V6Zm0 5h16v2H4v-2Zm0 5h16v2H4v-2Z" /></svg
 					>
+						<path d="M4 6h16v2H4V6Zm0 5h16v2H4v-2Zm0 5h16v2H4v-2Z" />
+					</svg>
+					<span class="sr-only">All events</span>
 				</a>
 				<button
+					type="button"
 					title="New event"
 					aria-label="New event"
 					class="flex h-9 w-9 items-center justify-center rounded border bg-white p-0 shadow-sm"
 					onclick={() => {
-						editing = null;
-						modalReadonly = false;
-						showModal = true;
-					}}
+	editing = null;
+	modalReadonly = false;
+	showModal = true;
+}}
 				>
 					<svg
+						aria-hidden="true"
 						xmlns="http://www.w3.org/2000/svg"
 						viewBox="0 0 24 24"
 						fill="currentColor"
-						class="h-5 w-5 text-gray-700"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z" /></svg
+						class="h-5 w-5 text-gray-700"
 					>
+						<path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z" />
+					</svg>
 				</button>
 				{#if hasPrev}
 					<button
+						type="button"
 						class="flex h-9 w-9 items-center justify-center rounded border bg-white p-0 text-base leading-none shadow-sm"
 						aria-label="Previous"
-						onclick={prev}>‹</button
+						onclick={prev}
 					>
+						‹
+					</button>
 				{/if}
 				{#if hasNext}
 					<button
+						type="button"
 						class="flex h-9 w-9 items-center justify-center rounded border bg-white p-0 text-base leading-none shadow-sm"
 						aria-label="Next"
-						onclick={next}>›</button
+						onclick={next}
 					>
+						›
+					</button>
 				{/if}
 			</div>
 			<div class="flex flex-col items-stretch gap-4 sm:flex-row sm:items-start">
@@ -209,15 +226,15 @@
 									<EventCard
 										{e}
 										on:view={() => {
-											editing = e;
-											modalReadonly = true;
-											showModal = true;
-										}}
+	editing = e;
+	modalReadonly = true;
+	showModal = true;
+}}
 										on:edit={() => {
-											editing = e;
-											modalReadonly = false;
-											showModal = true;
-										}}
+	editing = e;
+	modalReadonly = false;
+	showModal = true;
+}}
 									/>
 								</div>
 							{/each}
@@ -258,8 +275,3 @@
 		</div>
 	</section>
 </main>
-
-<style>
-	@media (max-width: 640px) {
-	}
-</style>

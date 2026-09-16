@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { timeData } from '../lib/stores';
+import { timeData } from '../lib/stores';
 
-	// Quarter progress (Svelte 5 runes)
-	const quarterProgress = $derived($timeData.progress.quarter);
+// Quarter progress (Svelte 5 runes)
+const quarterProgress = $derived($timeData.progress.quarter);
 
-	// Animation state for the progress bar
-	let progressWidth = $state(0);
+// Animation state for the progress bar
+let progressWidth = $state(0);
 
-	$effect(() => {
-		progressWidth = quarterProgress.progressPercentage;
-	});
+$effect(() => {
+	progressWidth = quarterProgress.progressPercentage;
+});
 </script>
 
 <div class="quarter-progress rounded-md bg-white px-4 py-4 shadow-md">
@@ -17,9 +17,9 @@
 		<div class="grid-cols-2">
 			<div class="text-left text-sm text-gray-600">
 				[Q{quarterProgress.start.toFormat('q')}]
-				{quarterProgress.start.toFormat('dd MMMM yyyy')} - {quarterProgress.end.toFormat(
-					'dd MMMM yyyy'
-				)}
+				{quarterProgress.start.toFormat('dd MMMM yyyy')}
+				-
+				{quarterProgress.end.toFormat('dd MMMM yyyy')}
 			</div>
 			<!-- Percentage (Top Right) -->
 			<div class="py-2 text-right text-sm font-medium text-gray-800">
@@ -36,39 +36,40 @@
 
 		<!-- Textual Info -->
 		<p class="textual-info mt-2 text-sm text-gray-600">
-			{quarterProgress.passedDays} d, {quarterProgress.remainingDays} d remaining ({quarterProgress.passedHours}/{quarterProgress.remainingHours}
+			{quarterProgress.passedDays}
+			d, {quarterProgress.remainingDays} d remaining ({quarterProgress.passedHours}/{quarterProgress.remainingHours}
 			h)
 		</p>
 	</div>
 </div>
 
 <style>
-	.quarter-progress {
-		background: inherit; /* Inherit the background from the parent */
-	}
+.quarter-progress {
+	background: inherit; /* Inherit the background from the parent */
+}
 
-	.progress-bar {
-		width: 0%; /* Start at 0% */
-		animation: fill 1s ease-in-out forwards;
-	}
+.progress-bar {
+	width: 0%; /* Start at 0% */
+	animation: fill 1s ease-in-out forwards;
+}
 
-	.textual-info {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		font-size: 0.875rem;
-		font-weight: 500;
-		color: #374151;
-		margin-bottom: 1rem;
-	}
+.textual-info {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: #374151;
+	margin-bottom: 1rem;
+}
 
-	/* Define the keyframes */
-	@keyframes fill {
-		from {
-			width: 0%;
-		}
-		to {
-			width: var(--dynamic-width);
-		}
+/* Define the keyframes */
+@keyframes fill {
+	from {
+		width: 0%;
 	}
+	to {
+		width: var(--dynamic-width);
+	}
+}
 </style>

@@ -1,5 +1,5 @@
-import { writable } from 'svelte/store';
 import { DateTime } from 'luxon';
+import { writable } from 'svelte/store';
 
 // Define the structure of progress data
 interface PeriodProgress {
