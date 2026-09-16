@@ -1,6 +1,6 @@
 import * as v from 'valibot';
 import { describe, expect, it } from 'vitest';
-import { CreateEventSchema } from './event-schema';
+import { applyEventPatch, CreateEventSchema, parseEventList } from './event-schema';
 
 const validEvent = {
 	name: 'Release review',
@@ -29,5 +29,28 @@ describe('CreateEventSchema', () => {
 
 	it('rejects unknown fields', () => {
 		expect(v.safeParse(CreateEventSchema, { ...validEvent, admin: true }).success).toBe(false);
+	});
+});
+
+describe('stored event validation', () => {
+	const storedEvent = {
+		id: 'dc174a5a-d72d-44ae-b96f-c274f02d5ea1',
+		...validEvent,
+		createdAt: '2026-09-17T07:00:00.000Z',
+		updatedAt: '2026-09-17T07:00:00.000Z'
+	};
+
+	it('rejects a malformed persisted list', () => {
+		expect(parseEventList([{ ...storedEvent, name: '' }])).toEqual([]);
+	});
+
+	it('rejects a patch that creates an invalid event range', () => {
+		expect(
+			applyEventPatch(
+				storedEvent,
+				{ id: storedEvent.id, start: '2026-09-17T10:00:00.000Z' },
+				'2026-09-17T07:30:00.000Z'
+			)
+		).toBeNull();
 	});
 });

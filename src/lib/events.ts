@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon';
 import { writable } from 'svelte/store';
+import { parseEventList } from './event-schema';
 
 export type { EventItem } from './event-schema';
 
@@ -16,7 +17,7 @@ function createEventsStore() {
 		if (typeof localStorage === 'undefined') return initial;
 		try {
 			const raw = localStorage.getItem(key);
-			return raw ? (JSON.parse(raw) as EventItem[]) : initial;
+			return raw ? parseEventList(JSON.parse(raw)) : initial;
 		} catch {
 			return initial;
 		}
@@ -31,7 +32,7 @@ function createEventsStore() {
 		try {
 			const res = await fetch('/events');
 			if (res.ok) {
-				const items = (await res.json()) as EventItem[];
+				const items = parseEventList(await res.json());
 				set(items);
 				persist(items);
 			}
@@ -89,8 +90,9 @@ function createEventsStore() {
 			}).catch(() => {});
 		},
 		setAll(items: EventItem[]) {
-			set(items);
-			persist(items);
+			const validated = parseEventList(items);
+			set(validated);
+			persist(validated);
 		}
 	};
 }

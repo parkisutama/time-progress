@@ -18,7 +18,7 @@ export const EventSchema = v.pipe(
 	v.check((event) => Date.parse(event.end) > Date.parse(event.start), 'End must be after start')
 );
 
-export const EventListSchema = v.array(EventSchema);
+export const EventListSchema = v.pipe(v.array(EventSchema), v.maxLength(500));
 
 export const CreateEventSchema = v.pipe(
 	v.strictObject({
@@ -44,3 +44,18 @@ export const UpdateEventSchema = v.strictObject({
 export const DeleteEventSchema = v.strictObject({ id: EventIdSchema });
 
 export type EventItem = v.InferOutput<typeof EventSchema>;
+
+export function parseEventList(input: unknown): EventItem[] {
+	const result = v.safeParse(EventListSchema, input);
+	return result.success ? result.output : [];
+}
+
+export function applyEventPatch(
+	event: EventItem,
+	patch: v.InferOutput<typeof UpdateEventSchema>,
+	updatedAt: string
+): EventItem | null {
+	const { id: _id, ...changes } = patch;
+	const result = v.safeParse(EventSchema, { ...event, ...changes, updatedAt });
+	return result.success ? result.output : null;
+}
