@@ -1,3 +1,14 @@
+---
+title: Security Policy
+created: 2026-09-17T01:50
+modified: 2026-09-17T01:50
+audience: security reporters, maintainers, and contributors
+content_type: reference
+tags:
+  - security
+  - reference
+---
+
 # Security policy
 
 ## Reporting a vulnerability

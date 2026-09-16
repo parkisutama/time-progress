@@ -1,4 +1,17 @@
+---
+title: Threat Model
+created: 2026-09-17T01:50
+modified: 2026-09-17T01:50
+audience: maintainers, security reviewers, and contributors
+content_type: explanation
+tags:
+  - security
+  - explanation
+---
+
 # Threat model
+
+Audience: maintainers, security reviewers, and contributors.
 
 ## Scope
 

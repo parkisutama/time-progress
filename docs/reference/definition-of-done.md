@@ -1,4 +1,17 @@
+---
+title: Definition of Done
+created: 2026-09-17T01:50
+modified: 2026-09-17T01:50
+audience: contributors and reviewers
+content_type: reference
+tags:
+  - engineering
+  - reference
+---
+
 # Definition of done
+
+Audience: contributors and reviewers.
 
 A change is complete only when all applicable items are satisfied.
 
@@ -23,7 +36,11 @@ A change is complete only when all applicable items are satisfied.
 
 ## Delivery
 
+- Relevant ADRs were read before implementation and new architectural decisions are recorded in `docs/ADR/`.
+- Significant behavior or contract changes have an approved specification in `docs/SPEC/`.
+- Notable changes are recorded under `Unreleased` in `CHANGELOG.md`.
+- Documentation identifies its audience and follows one Diátaxis content type.
 - `git diff --check` passes and the staged diff matches the intended scope.
-- Commits are small, conventional, and independently understandable.
+- Commits are atomic, follow Conventional Commits 1.0.0-beta.4, and are independently understandable.
 - Platform-specific or human acceptance is recorded separately from automated checks.
 - Push, merge, deployment, and other external mutations occur only with explicit authorization.
