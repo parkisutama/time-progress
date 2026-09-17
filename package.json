@@ -1,5 +1,6 @@
 {
 	"name": "time-progress",
+	"description": "Live progress of today, this week, month, quarter, and year, plus countdowns for personal events.",
 	"private": true,
 	"version": "0.0.1",
 	"packageManager": "bun@1.4.2",
