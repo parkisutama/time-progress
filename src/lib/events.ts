@@ -10,27 +10,39 @@ import type { EventItem } from './event-schema';
 const EVENTS_KEY = 'tp:events:v1';
 const PENDING_KEY = 'tp:events:pending:v1';
 
+/** Delays before automatic retries after a network error or 5xx response; the last one repeats. */
+const RETRY_DELAYS_MS = [5_000, 30_000, 120_000, 600_000];
+
 const PendingIdsSchema = v.array(v.pipe(v.string(), v.uuid()));
 
 type EventsStorage = Pick<Storage, 'getItem' | 'setItem'>;
+
+type Outcome = 'acknowledged' | 'transient' | 'rejected';
 
 export type EventsStoreOptions = {
 	fetch: typeof fetch;
 	/** Browser storage for the local event list; omitted during server rendering. */
 	storage?: EventsStorage;
-	/** Loads events from the server when the store is created. */
+	/** Registers a listener for the browser `online` event. */
+	onOnline?: (listener: () => void) => void;
+	/** Retries pending changes and loads events from the server when the store is created. */
 	syncOnCreate?: boolean;
 };
 
 export const eventsStore = createEventsStore({
 	fetch: (input, init) => fetch(input, init),
 	storage: typeof localStorage === 'undefined' ? undefined : localStorage,
+	onOnline:
+		typeof window === 'undefined'
+			? undefined
+			: (listener) => window.addEventListener('online', listener),
 	syncOnCreate: typeof window !== 'undefined'
 });
 
 /**
  * Local-first event list. A change is kept locally and its event id stays pending until the
- * server acknowledges it with a 2xx response, so server rejections never discard it (SPEC-001).
+ * server acknowledges it with a 2xx response, so server rejections never discard it, and pending
+ * changes are retried automatically (SPEC-001).
  */
 export function createEventsStore(options: EventsStoreOptions) {
 	const { storage } = options;
@@ -38,6 +50,13 @@ export function createEventsStore(options: EventsStoreOptions) {
 	const pendingIds = new Set(readPendingIds());
 	const events = writable<EventItem[]>(list);
 	const pending = writable<ReadonlySet<string>>(new Set(pendingIds));
+	// Local change counter per event, so that a stale acknowledgement cannot clear a newer change.
+	const revisions = new Map<string, number>();
+	const inFlight = new Map<string, Promise<void>>();
+	// Rejected events wait for a page load, an online event, or a local change (REQ-23).
+	const blocked = new Set<string>();
+	let retryStep = 0;
+	let retryTimer: ReturnType<typeof setTimeout> | undefined;
 
 	function readEvents(): EventItem[] {
 		try {
@@ -71,21 +90,85 @@ export function createEventsStore(options: EventsStoreOptions) {
 		storage?.setItem(PENDING_KEY, JSON.stringify([...pendingIds]));
 	}
 
-	function send(id: string, method: 'POST' | 'PATCH' | 'DELETE', body: unknown) {
-		options
-			.fetch('/events', {
+	function changeLocally(id: string, next: EventItem[]) {
+		setList(next);
+		setPending(id, true);
+		blocked.delete(id);
+		revisions.set(id, (revisions.get(id) ?? 0) + 1);
+	}
+
+	async function request(method: string, body: unknown): Promise<number | null> {
+		try {
+			const response = await options.fetch('/events', {
 				method,
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify(body)
-			})
-			.then(
-				(response) => {
-					if (response.ok) setPending(id, false);
-				},
-				() => {
-					// Offline: the change stays pending.
-				}
-			);
+			});
+			return response.status;
+		} catch {
+			return null;
+		}
+	}
+
+	function classify(status: number | null): Outcome {
+		if (status === null || status >= 500) return 'transient';
+		if (status >= 200 && status < 300) return 'acknowledged';
+		return 'rejected';
+	}
+
+	// Sends the current local state of one event (REQ-20).
+	async function send(id: string, create: boolean): Promise<Outcome> {
+		const item = list.find((event) => event.id === id);
+		if (!item) {
+			const status = await request('DELETE', { id });
+			return status === 404 ? 'acknowledged' : classify(status);
+		}
+		if (!create) {
+			const { name, detail, start, end } = item;
+			const status = await request('PATCH', { id, name, detail, start, end });
+			if (status !== 404) return classify(status);
+		}
+		return classify(await request('POST', item));
+	}
+
+	// One request per event at a time; a change made meanwhile is sent afterwards (REQ-24, REQ-25).
+	function sync(id: string, create = false): Promise<void> {
+		const running = inFlight.get(id);
+		if (running) return running;
+		const revision = revisions.get(id) ?? 0;
+		const attempt = send(id, create).then((outcome) => {
+			inFlight.delete(id);
+			if ((revisions.get(id) ?? 0) !== revision) return sync(id);
+			settle(id, outcome);
+		});
+		inFlight.set(id, attempt);
+		return attempt;
+	}
+
+	function settle(id: string, outcome: Outcome) {
+		if (outcome === 'acknowledged') {
+			setPending(id, false);
+			retryStep = 0;
+		} else if (outcome === 'rejected') {
+			blocked.add(id);
+		} else {
+			scheduleRetry();
+		}
+	}
+
+	function scheduleRetry() {
+		if (retryTimer !== undefined) return;
+		const delay = RETRY_DELAYS_MS[Math.min(retryStep, RETRY_DELAYS_MS.length - 1)];
+		retryStep += 1;
+		retryTimer = setTimeout(() => {
+			retryTimer = undefined;
+			void retryPending();
+		}, delay);
+	}
+
+	async function retryPending() {
+		const ids = [...pendingIds].filter((id) => !blocked.has(id));
+		await Promise.all(ids.map((id) => sync(id)));
 	}
 
 	// Pending events keep their local state, including pending deletions (REQ-14).
@@ -102,6 +185,7 @@ export function createEventsStore(options: EventsStoreOptions) {
 	}
 
 	async function load() {
+		await retryPending();
 		try {
 			const response = await options.fetch('/events');
 			if (!response.ok) return;
@@ -111,6 +195,14 @@ export function createEventsStore(options: EventsStoreOptions) {
 			// Offline: keep the local list.
 		}
 	}
+
+	options.onOnline?.(() => {
+		blocked.clear();
+		retryStep = 0;
+		clearTimeout(retryTimer);
+		retryTimer = undefined;
+		void retryPending();
+	});
 
 	if (options.syncOnCreate) {
 		void load();
@@ -124,21 +216,24 @@ export function createEventsStore(options: EventsStoreOptions) {
 		add(e: Omit<EventItem, 'id' | 'createdAt' | 'updatedAt'>) {
 			const now = DateTime.now().toISO();
 			const item: EventItem = { id: crypto.randomUUID(), ...e, createdAt: now, updatedAt: now };
-			setList([item, ...list]);
-			setPending(item.id, true);
-			send(item.id, 'POST', item);
+			changeLocally(item.id, [item, ...list]);
+			void sync(item.id, true);
 			return item;
 		},
 		updateItem(id: string, patch: Partial<EventItem>) {
 			const now = DateTime.now().toISO();
-			setList(list.map((it) => (it.id === id ? { ...it, ...patch, updatedAt: now } : it)));
-			setPending(id, true);
-			send(id, 'PATCH', { id, ...patch });
+			changeLocally(
+				id,
+				list.map((it) => (it.id === id ? { ...it, ...patch, updatedAt: now } : it))
+			);
+			void sync(id);
 		},
 		remove(id: string) {
-			setList(list.filter((it) => it.id !== id));
-			setPending(id, true);
-			send(id, 'DELETE', { id });
+			changeLocally(
+				id,
+				list.filter((it) => it.id !== id)
+			);
+			void sync(id);
 		},
 		setAll(items: EventItem[]) {
 			setList(parseEventList(items) ?? []);

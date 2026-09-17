@@ -54,9 +54,22 @@ function fakeServer(reply: (method: string, body: unknown) => Reply | Promise<Re
 
 function openStore(
 	storage: ReturnType<typeof memoryStorage>,
-	server: ReturnType<typeof fakeServer>
+	server: ReturnType<typeof fakeServer>,
+	onOnline?: (listener: () => void) => void
 ) {
-	return createEventsStore({ fetch: server.fetch, storage });
+	return createEventsStore({ fetch: server.fetch, storage, onOnline });
+}
+
+function writes(server: ReturnType<typeof fakeServer>) {
+	return server.calls.filter((call) => call.method !== 'GET');
+}
+
+function deferred() {
+	let resolve: (reply: Reply) => void = () => {};
+	const promise = new Promise<Reply>((done) => {
+		resolve = done;
+	});
+	return { promise, resolve };
 }
 
 function pendingIds(storage: ReturnType<typeof memoryStorage>) {
@@ -186,5 +199,137 @@ describe('SPEC-001 event synchronization', () => {
 		await store.load();
 
 		expect(get(store).map((item) => item.name)).toEqual(['Fresh', 'Local edit', 'Event 2']);
+	});
+});
+
+describe('SPEC-001 automatic retry', () => {
+	beforeEach(() => {
+		vi.useFakeTimers({ toFake: ['Date'] });
+		vi.setSystemTime(new Date('2026-09-17T12:00:00.000Z'));
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it('AC-14: stores a pending created event before requesting GET /events', async () => {
+		const created = event(0);
+		const storage = memoryStorage({ [EVENTS_KEY]: [created], [PENDING_KEY]: [created.id] });
+		const server = fakeServer((method) => {
+			if (method === 'PATCH') return 404;
+			if (method === 'POST') return 200;
+			return { status: 200, body: [created] };
+		});
+		const store = openStore(storage, server);
+
+		await store.load();
+
+		expect(server.calls.map((call) => call.method)).toEqual(['PATCH', 'POST', 'GET']);
+		expect(pendingIds(storage)).toEqual([]);
+	});
+
+	it('AC-15: creates a pending event with POST when PATCH responds 404', async () => {
+		const local = event(0, 'Never stored');
+		const storage = memoryStorage({ [EVENTS_KEY]: [local], [PENDING_KEY]: [local.id] });
+		const server = fakeServer((method) =>
+			method === 'PATCH' ? 404 : method === 'POST' ? 200 : 500
+		);
+		const store = openStore(storage, server);
+
+		await store.load();
+
+		expect(writes(server)).toEqual([
+			{
+				method: 'PATCH',
+				body: { id: local.id, name: local.name, detail: '', start: local.start, end: local.end }
+			},
+			{ method: 'POST', body: local }
+		]);
+		expect(pendingIds(storage)).toEqual([]);
+	});
+
+	it('AC-16: acknowledges a pending deletion when DELETE responds 404', async () => {
+		const id = event(0).id;
+		const storage = memoryStorage({ [EVENTS_KEY]: [], [PENDING_KEY]: [id] });
+		const server = fakeServer((method) => (method === 'DELETE' ? 404 : 500));
+		const store = openStore(storage, server);
+
+		await store.load();
+
+		expect(writes(server)).toEqual([{ method: 'DELETE', body: { id } }]);
+		expect(pendingIds(storage)).toEqual([]);
+	});
+
+	it.each([
+		['5 seconds', 5_000, 2],
+		['30 more seconds', 35_000, 3],
+		['2 more minutes', 155_000, 4],
+		['10 more minutes', 755_000, 5],
+		['another 10 minutes', 1_355_000, 6]
+	])('AC-17: retries after %s following repeated network errors', async (_case, at, attempts) => {
+		vi.useFakeTimers();
+		const storage = memoryStorage({ [EVENTS_KEY]: [], [PENDING_KEY]: [event(0).id] });
+		const server = fakeServer((method) => (method === 'DELETE' ? 'network error' : 500));
+		await openStore(storage, server).load();
+		await vi.advanceTimersByTimeAsync(at - 1);
+		const before = writes(server).length;
+
+		await vi.advanceTimersByTimeAsync(1);
+
+		expect(before).toBe(attempts - 1);
+		expect(writes(server)).toHaveLength(attempts);
+	});
+
+	it.each([401, 409, 422])('AC-18: stops retrying after a %s response', async (status) => {
+		vi.useFakeTimers();
+		const local = event(0);
+		const storage = memoryStorage({ [EVENTS_KEY]: [local], [PENDING_KEY]: [local.id] });
+		const server = fakeServer((method) => {
+			if (method === 'PATCH') return status === 409 ? 404 : status;
+			if (method === 'POST') return status;
+			return 500;
+		});
+		await openStore(storage, server).load();
+		const attempted = writes(server).length;
+
+		await vi.advanceTimersByTimeAsync(60 * 60 * 1000);
+
+		expect(writes(server)).toHaveLength(attempted);
+		expect(pendingIds(storage)).toEqual([local.id]);
+	});
+
+	it('AC-19: retries a pending event immediately when the browser comes online', async () => {
+		const local = event(0);
+		const storage = memoryStorage({ [EVENTS_KEY]: [local], [PENDING_KEY]: [local.id] });
+		let accepting = false;
+		const server = fakeServer((method) => (method === 'PATCH' ? (accepting ? 200 : 422) : 500));
+		const listeners: (() => void)[] = [];
+		await openStore(storage, server, (listener) => listeners.push(listener)).load();
+		accepting = true;
+
+		for (const listener of listeners) listener();
+
+		await vi.waitFor(() => expect(pendingIds(storage)).toEqual([]));
+		expect(writes(server)).toHaveLength(2);
+	});
+
+	it('AC-20: keeps an event pending until a change made during a request is acknowledged', async () => {
+		const storage = memoryStorage({ [EVENTS_KEY]: [event(0)] });
+		const first = deferred();
+		const second = deferred();
+		const replies = [first.promise, second.promise];
+		const server = fakeServer((method) => (method === 'PATCH' ? (replies.shift() ?? 500) : 500));
+		const store = openStore(storage, server);
+		store.updateItem(event(0).id, { name: 'First' });
+		await vi.waitFor(() => expect(writes(server)).toHaveLength(1));
+		store.updateItem(event(0).id, { name: 'Second' });
+		const whileInFlight = writes(server).length;
+
+		first.resolve(200);
+
+		await vi.waitFor(() => expect(writes(server)).toHaveLength(2));
+		expect(whileInFlight).toBe(1);
+		expect(writes(server)[1].body).toMatchObject({ name: 'Second' });
+		expect(pendingIds(storage)).toEqual([event(0).id]);
 	});
 });
