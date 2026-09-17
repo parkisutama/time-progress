@@ -1,12 +1,25 @@
-# http://editorconfig.org
+# EditorConfig: https://editorconfig.org
+# Aligns editors with biome.json; Biome remains the authority for code formatting.
+# Reference: docs/reference/documentation-standards.md#editor-settings
 root = true
 
 [*]
-indent_style = tab
-end_of_line = lf
 charset = utf-8
-trim_trailing_whitespace = true
+end_of_line = lf
 insert_final_newline = true
+trim_trailing_whitespace = true
 
-[*.yml]
+[*.{js,mjs,cjs,ts,svelte,json,jsonc,css,html}]
+indent_style = tab
+indent_size = tab
+tab_width = 2
+max_line_length = 100
+
+# Nested Markdown lists use four spaces.
+[*.md]
 indent_style = space
+indent_size = 4
+
+[*.{yml,yaml,toml}]
+indent_style = space
+indent_size = 2
