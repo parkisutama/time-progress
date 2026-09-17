@@ -8,6 +8,8 @@ const dispatch = createEventDispatcher<{ edit: undefined; view: undefined }>();
 
 const { e } = $props<{ e: EventItem }>();
 
+const pendingIds = eventsStore.pending;
+
 // Live time ticker
 let now = $state(DateTime.now());
 let timer: ReturnType<typeof setInterval>;
@@ -33,9 +35,19 @@ function secondsToHMS(sec: number) {
 <div class="flex h-full flex-col rounded-lg bg-white p-4 shadow-md">
 	<div class="mb-2 flex items-start justify-between gap-2">
 		<h2 class="text-base leading-tight font-semibold">{e.name}</h2>
-		<span class="rounded bg-gray-100 px-2 py-0.5 text-[10px] tracking-wide text-gray-700 uppercase"
-			>{status}</span
-		>
+		<div class="flex shrink-0 flex-wrap justify-end gap-1">
+			{#if $pendingIds.has(e.id)}
+				<span
+					class="rounded bg-amber-100 px-2 py-0.5 text-[10px] tracking-wide text-amber-800 uppercase"
+					title="The latest change to this event has not been saved on the server yet"
+					>Not synced</span
+				>
+			{/if}
+			<span
+				class="rounded bg-gray-100 px-2 py-0.5 text-[10px] tracking-wide text-gray-700 uppercase"
+				>{status}</span
+			>
+		</div>
 	</div>
 
 	<div class="mb-1 text-[11px] text-gray-500">
