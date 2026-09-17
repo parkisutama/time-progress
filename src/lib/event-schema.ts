@@ -18,7 +18,10 @@ export const EventSchema = v.pipe(
 	v.check((event) => Date.parse(event.end) > Date.parse(event.start), 'End must be after start')
 );
 
-export const EventListSchema = v.pipe(v.array(EventSchema), v.maxLength(500));
+// The limit applies when an event is created, never when stored data is read (ADR-003).
+export const EVENT_LIMIT = 500;
+
+export const EventListSchema = v.array(EventSchema);
 
 export const CreateEventSchema = v.pipe(
 	v.strictObject({
@@ -45,9 +48,13 @@ export const DeleteEventSchema = v.strictObject({ id: EventIdSchema });
 
 export type EventItem = v.InferOutput<typeof EventSchema>;
 
-export function parseEventList(input: unknown): EventItem[] {
-	const result = v.safeParse(EventListSchema, input);
-	return result.success ? result.output : [];
+/**
+ * Returns the stored list unchanged when every record is valid, or `null` when it is not.
+ * The input is returned instead of the parsed output so that transforms such as trimming never
+ * rewrite records that a request does not target.
+ */
+export function parseEventList(input: unknown): EventItem[] | null {
+	return v.is(EventListSchema, input) ? input : null;
 }
 
 export function applyEventPatch(

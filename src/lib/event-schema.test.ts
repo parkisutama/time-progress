@@ -40,8 +40,20 @@ describe('stored event validation', () => {
 		updatedAt: '2026-09-17T07:00:00.000Z'
 	};
 
-	it('rejects a malformed persisted list', () => {
-		expect(parseEventList([{ ...storedEvent, name: '' }])).toEqual([]);
+	it('reports a stored list with an invalid record as unreadable', () => {
+		expect(parseEventList([storedEvent, { ...storedEvent, name: '' }])).toBeNull();
+	});
+
+	it('accepts a stored list longer than the event limit', () => {
+		const list = Array.from({ length: 501 }, () => storedEvent);
+
+		expect(parseEventList(list)).toHaveLength(501);
+	});
+
+	it('returns stored records without applying transforms', () => {
+		const padded = { ...storedEvent, name: '  Release review  ' };
+
+		expect(parseEventList([padded])?.[0].name).toBe('  Release review  ');
 	});
 
 	it('rejects a patch that creates an invalid event range', () => {

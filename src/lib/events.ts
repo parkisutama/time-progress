@@ -17,7 +17,7 @@ function createEventsStore() {
 		if (typeof localStorage === 'undefined') return initial;
 		try {
 			const raw = localStorage.getItem(key);
-			return raw ? parseEventList(JSON.parse(raw)) : initial;
+			return raw ? (parseEventList(JSON.parse(raw)) ?? initial) : initial;
 		} catch {
 			return initial;
 		}
@@ -32,7 +32,7 @@ function createEventsStore() {
 		try {
 			const res = await fetch('/events');
 			if (res.ok) {
-				const items = parseEventList(await res.json());
+				const items = parseEventList(await res.json()) ?? [];
 				set(items);
 				persist(items);
 			}
@@ -90,7 +90,7 @@ function createEventsStore() {
 			}).catch(() => {});
 		},
 		setAll(items: EventItem[]) {
-			const validated = parseEventList(items);
+			const validated = parseEventList(items) ?? [];
 			set(validated);
 			persist(validated);
 		}
