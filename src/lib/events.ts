@@ -1,10 +1,16 @@
 import { DateTime } from 'luxon';
-import { writable } from 'svelte/store';
+import { type Readable, writable } from 'svelte/store';
+import * as v from 'valibot';
 import { parseEventList } from './event-schema';
 
 export type { EventItem } from './event-schema';
 
 import type { EventItem } from './event-schema';
+
+const EVENTS_KEY = 'tp:events:v1';
+const PENDING_KEY = 'tp:events:pending:v1';
+
+const PendingIdsSchema = v.array(v.pipe(v.string(), v.uuid()));
 
 type EventsStorage = Pick<Storage, 'getItem' | 'setItem'>;
 
@@ -22,97 +28,120 @@ export const eventsStore = createEventsStore({
 	syncOnCreate: typeof window !== 'undefined'
 });
 
+/**
+ * Local-first event list. A change is kept locally and its event id stays pending until the
+ * server acknowledges it with a 2xx response, so server rejections never discard it (SPEC-001).
+ */
 export function createEventsStore(options: EventsStoreOptions) {
-	const key = 'tp:events:v1';
-	const initial: EventItem[] = [];
 	const { storage } = options;
-	const { subscribe, set, update } = writable<EventItem[]>(load());
+	let list = readEvents();
+	const pendingIds = new Set(readPendingIds());
+	const events = writable<EventItem[]>(list);
+	const pending = writable<ReadonlySet<string>>(new Set(pendingIds));
 
-	function load(): EventItem[] {
-		if (!storage) return initial;
+	function readEvents(): EventItem[] {
 		try {
-			const raw = storage.getItem(key);
-			return raw ? (parseEventList(JSON.parse(raw)) ?? initial) : initial;
+			const raw = storage?.getItem(EVENTS_KEY);
+			return raw ? (parseEventList(JSON.parse(raw)) ?? []) : [];
 		} catch {
-			return initial;
+			return [];
 		}
 	}
 
-	function persist(value: EventItem[]) {
-		storage?.setItem(key, JSON.stringify(value));
-	}
-
-	async function syncFromServer() {
+	function readPendingIds(): string[] {
 		try {
-			const res = await options.fetch('/events');
-			if (res.ok) {
-				const items = parseEventList(await res.json()) ?? [];
-				set(items);
-				persist(items);
-			}
+			const raw = storage?.getItem(PENDING_KEY);
+			const parsed: unknown = raw ? JSON.parse(raw) : [];
+			return v.is(PendingIdsSchema, parsed) ? parsed : [];
 		} catch {
-			// ignore (offline)
+			return [];
 		}
 	}
 
-	// try initial sync (if authorized server returns 401, we stay local)
+	function setList(next: EventItem[]) {
+		list = next;
+		events.set(next);
+		storage?.setItem(EVENTS_KEY, JSON.stringify(next));
+	}
+
+	function setPending(id: string, isPending: boolean) {
+		if (isPending) pendingIds.add(id);
+		else pendingIds.delete(id);
+		pending.set(new Set(pendingIds));
+		storage?.setItem(PENDING_KEY, JSON.stringify([...pendingIds]));
+	}
+
+	function send(id: string, method: 'POST' | 'PATCH' | 'DELETE', body: unknown) {
+		options
+			.fetch('/events', {
+				method,
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify(body)
+			})
+			.then(
+				(response) => {
+					if (response.ok) setPending(id, false);
+				},
+				() => {
+					// Offline: the change stays pending.
+				}
+			);
+	}
+
+	// Pending events keep their local state, including pending deletions (REQ-14).
+	function merge(server: EventItem[]): EventItem[] {
+		const local = new Map(list.map((item) => [item.id, item]));
+		const serverIds = new Set(server.map((item) => item.id));
+		const unsynced = list.filter((item) => pendingIds.has(item.id) && !serverIds.has(item.id));
+		const synced = server.flatMap((item) => {
+			if (!pendingIds.has(item.id)) return [item];
+			const localItem = local.get(item.id);
+			return localItem ? [localItem] : [];
+		});
+		return [...unsynced, ...synced];
+	}
+
+	async function load() {
+		try {
+			const response = await options.fetch('/events');
+			if (!response.ok) return;
+			const server = parseEventList(await response.json());
+			if (server) setList(merge(server));
+		} catch {
+			// Offline: keep the local list.
+		}
+	}
+
 	if (options.syncOnCreate) {
-		syncFromServer();
+		void load();
 	}
 
 	return {
-		subscribe,
+		subscribe: events.subscribe,
+		/** Ids of events whose latest local change the server has not acknowledged. */
+		pending: { subscribe: pending.subscribe } as Readable<ReadonlySet<string>>,
+		load,
 		add(e: Omit<EventItem, 'id' | 'createdAt' | 'updatedAt'>) {
 			const now = DateTime.now().toISO();
 			const item: EventItem = { id: crypto.randomUUID(), ...e, createdAt: now, updatedAt: now };
-			update((list) => {
-				const next = [item, ...list];
-				persist(next);
-				return next;
-			});
-			// try server
-			options
-				.fetch('/events', {
-					method: 'POST',
-					headers: { 'content-type': 'application/json' },
-					body: JSON.stringify(item)
-				})
-				.catch(() => {});
+			setList([item, ...list]);
+			setPending(item.id, true);
+			send(item.id, 'POST', item);
 			return item;
 		},
 		updateItem(id: string, patch: Partial<EventItem>) {
 			const now = DateTime.now().toISO();
-			update((list) => {
-				const next = list.map((it) => (it.id === id ? { ...it, ...patch, updatedAt: now } : it));
-				persist(next);
-				return next;
-			});
-			options
-				.fetch('/events', {
-					method: 'PATCH',
-					headers: { 'content-type': 'application/json' },
-					body: JSON.stringify({ id, ...patch })
-				})
-				.catch(() => {});
+			setList(list.map((it) => (it.id === id ? { ...it, ...patch, updatedAt: now } : it)));
+			setPending(id, true);
+			send(id, 'PATCH', { id, ...patch });
 		},
 		remove(id: string) {
-			update((list) => {
-				const next = list.filter((it) => it.id !== id);
-				persist(next);
-				return next;
-			});
-			options
-				.fetch('/events', {
-					method: 'DELETE',
-					headers: { 'content-type': 'application/json' },
-					body: JSON.stringify({ id })
-				})
-				.catch(() => {});
+			setList(list.filter((it) => it.id !== id));
+			setPending(id, true);
+			send(id, 'DELETE', { id });
 		},
 		setAll(items: EventItem[]) {
-			const validated = parseEventList(items) ?? [];
-			set(validated);
-			persist(validated);
+			setList(parseEventList(items) ?? []);
 		}
 	};
 }
