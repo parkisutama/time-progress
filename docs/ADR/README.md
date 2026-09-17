@@ -1,7 +1,7 @@
 ---
 title: Architecture Decision Records
 created: 2026-09-17T02:00
-modified: 2026-09-17T02:00
+modified: 2026-09-17T02:45
 audience: maintainers, contributors, reviewers, and AI coding agents
 content_type: reference
 tags:
@@ -10,27 +10,26 @@ tags:
   - reference
 ---
 
-# Architecture Decision Records
+# Architecture decision records
 
-Audience: maintainers, contributors, reviewers, and AI coding agents.
+This directory is the decision log for Progressive Time.
+Each record captures one architectural decision, the options that were considered, and the consequences that were accepted.
 
-This directory is the authoritative history of consequential architecture and
-domain decisions. Before planning or changing the repository, contributors
-MUST review this index and every ADR related to the affected area.
+- When an ADR is required and who decides: [`AGENTS.md`](../../AGENTS.md#decision-protocol).
+- Format, statuses, and quality criteria: [Decision records](../reference/decision-records.md).
+- Writing a record: [How to propose an architecture decision](../how-to/propose-an-architecture-decision.md).
+- Deciding a record: [How to decide a proposed architecture decision](../how-to/decide-a-proposed-architecture-decision.md).
+- Starting point for a new record: [`ADR-000-template.md`](ADR-000-template.md).
 
-Create an ADR when a decision changes a domain model, business rule, public
-contract, authentication boundary, persistence model, runtime, deployment,
-dependency strategy, or another choice that is expensive to reverse.
+## Awaiting decision
 
-## Lifecycle
+| ADR | Question | Recommendation |
+| --- | --- | --- |
+| [ADR-002](ADR-002-verify-cloudflare-access-identity.md) | Should the Worker trust the Access email header, or verify the Access token? | Verify the Access token in the Worker |
 
-1. Copy [`ADR-000-template.md`](ADR-000-template.md).
-2. Assign the next sequential number and a concise kebab-case title.
-3. Use one of: `Proposed`, `Accepted`, `Deprecated`, or `Superseded`.
-4. Link related specifications and ADRs.
-5. After acceptance, do not rewrite history. Create a new ADR and mark the old
-   record as superseded when the decision changes.
+## Decision log
 
-## Index
-
-- [ADR-001: Web runtime and toolchain](ADR-001-web-runtime-and-toolchain.md) — Accepted
+| ADR | Decision | Status | Date |
+| --- | --- | --- | --- |
+| [ADR-001](ADR-001-web-runtime-and-toolchain.md) | Web runtime and toolchain | accepted | 2026-09-17 |
+| [ADR-002](ADR-002-verify-cloudflare-access-identity.md) | Verify Cloudflare Access identity | proposed | 2026-09-17 |

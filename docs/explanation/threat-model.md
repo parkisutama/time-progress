@@ -33,9 +33,9 @@ This model covers the SvelteKit application deployed to Cloudflare Workers, Clou
 
 | Threat | Current control | Residual risk |
 | --- | --- | --- |
-| Identity spoofing | Cloudflare Access protects `/events`; handlers also require `locals.user` | The Access policy and public Worker routes must remain correctly configured |
+| Identity spoofing | Cloudflare Access protects `/events`; handlers also require `locals.user` | The Worker trusts the email header without verifying the Access token; any route that bypasses Access allows a forged identity. See [ADR-002](../ADR/ADR-002-verify-cloudflare-access-identity.md) |
 | Development bypass in production | Bypass works only for loopback hosts and `.dev.vars` is ignored | A future auth change could reintroduce a production bypass; tests guard the current contract |
-| Cross-user data access | KV keys are derived from the authenticated email | Email normalization and identity-provider changes require review |
+| Cross-user data access | KV keys are derived from the authenticated email | Depends on the identity control above; email normalization and identity-provider changes require review |
 | Malformed or over-posted event data | Strict Valibot schemas validate writes and KV reads | Request-size and application-level rate limits are provided by platform configuration, not this code |
 | XSS and clickjacking | Svelte escapes text; browser hardening headers deny framing and MIME sniffing | A strict CSP still needs browser validation before enforcement |
 | Dependency compromise | One Bun lockfile, frozen CI install, audit, Dependabot | Audits detect known advisories, not a newly malicious release |
