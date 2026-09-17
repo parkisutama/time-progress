@@ -1,7 +1,7 @@
 ---
 title: Threat Model
 created: 2026-09-17T01:50
-modified: 2026-09-17T02:45
+modified: 2026-09-17T08:08
 audience: maintainers, security reviewers, contributors, and AI coding agents
 content_type: explanation
 tags:
@@ -25,7 +25,7 @@ This model covers the SvelteKit application deployed to Cloudflare Workers, Clou
 
 1. Browser to Worker: request bodies, headers, and client state are untrusted.
 2. Cloudflare Access to Worker: identity is accepted only behind the configured Access policy.
-3. Worker to KV: stored JSON may be malformed or stale and is revalidated when read.
+3. Worker to KV: stored JSON may be malformed or stale, is revalidated when read, and is never overwritten when it fails validation.
 4. Git and registry to CI: workflow actions, packages, and lockfile changes are supply-chain input.
 5. AI agent to repository: generated code and commands receive the same review and verification as human work.
 
@@ -36,8 +36,8 @@ This model covers the SvelteKit application deployed to Cloudflare Workers, Clou
 | Identity spoofing | Cloudflare Access protects `/events`; handlers also require `locals.user` | The Worker trusts the email header without verifying the Access token; any route that bypasses Access allows a forged identity. See [ADR-002](../ADR/ADR-002-verify-cloudflare-access-identity.md) |
 | Development bypass in production | Bypass works only for loopback hosts and `.dev.vars` is ignored | A future auth change could reintroduce a production bypass; tests guard the current contract |
 | Cross-user data access | KV keys are derived from the authenticated email | Depends on the identity control above; email normalization and identity-provider changes require review |
-| Stored data loss | Strict Valibot schemas validate KV reads | **Known defect:** when any stored record or the list size fails validation, the next write replaces all of that user's events. See [ADR-003](../ADR/ADR-003-store-events-per-identity-in-kv.md) |
-| Silent client and server divergence | Local changes are cached in `localStorage` | Server rejections are ignored, and a later successful load discards unsynchronized local changes. See ADR-003 |
+| Stored data loss | Strict Valibot schemas validate KV reads; every `/events` method responds 500 without writing when stored data fails validation, and the event limit applies only when an event is created. See [ADR-003](../ADR/ADR-003-store-events-per-identity-in-kv.md) and [SPEC-001](../SPEC/SPEC-001-event-persistence-integrity.md) | Unreadable stored data blocks that user's requests until an operator repairs it; concurrent writes from several devices keep only the last write |
+| Silent client and server divergence | Changes the server has not acknowledged stay pending in `localStorage`, are labeled "Not synced", survive reloads, and are retried automatically. See SPEC-001 | A pending change exists only in the browser that made it until a retry succeeds; unreadable `localStorage` content is replaced by the next local change |
 | Malformed or over-posted event data | Strict Valibot schemas validate writes | Request-size and rate limits are provided by platform configuration, not this code |
 | XSS and clickjacking | Svelte escapes text; browser hardening headers deny framing and MIME sniffing | A strict CSP still needs browser validation before enforcement |
 | Dependency compromise | One Bun lockfile, frozen CI install, audit, Dependabot | Audits detect known advisories, not a newly malicious release |
