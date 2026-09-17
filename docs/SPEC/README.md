@@ -31,4 +31,4 @@ A human approves the SPEC before planning, and the plan before implementation.
 
 | SPEC | Capability | Status | ADRs |
 | --- | --- | --- | --- |
-| [SPEC-001](SPEC-001-event-persistence-integrity.md) | Event persistence integrity | approved | ADR-003 |
+| [SPEC-001](SPEC-001-event-persistence-integrity.md) | Event persistence integrity | implemented | ADR-003 |

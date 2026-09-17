@@ -1,10 +1,10 @@
 ---
 title: "SPEC-001: Event Persistence Integrity"
 created: 2026-09-17T07:52
-modified: 2026-09-17T07:58
+modified: 2026-09-17T08:12
 audience: signed-in event users and implementation reviewers
 content_type: reference
-status: approved
+status: implemented
 owner: repository maintainers
 approvers:
   - Parkis Utama
@@ -326,7 +326,6 @@ Then the event shows a "Not synced" label
 ## Delivery plan
 
 Each task is a separate commit.
-
 
 1. Server: fail-closed stored data handling and the create-time limit (AC-1 to AC-9).
    The existing test `rejects a malformed persisted list` in `src/lib/event-schema.test.ts` asserts the defect and is replaced by tests of the new read classification.
