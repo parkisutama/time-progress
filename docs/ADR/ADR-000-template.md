@@ -1,45 +1,82 @@
 ---
-title: "ADR-000: Decision title"
+title: "ADR-NNN: Verb phrase naming the decision"
 created: YYYY-MM-DDTHH:mm
 modified: YYYY-MM-DDTHH:mm
-audience: define the primary decision makers and reviewers
+audience: maintainers, contributors, reviewers, and AI coding agents
 content_type: explanation
+status: proposed
+date: YYYY-MM-DD
+decision-makers: []
+consulted: []
+informed: []
+supersedes: []
+superseded-by: []
 tags:
   - architecture
   - decision
 ---
 
-# ADR-000: Decision title
+# ADR-NNN: Verb phrase naming the decision
 
-Audience: maintainers, contributors, reviewers, and AI coding agents.
+<!--
+Copy to docs/ADR/ADR-NNN-<verb-phrase>.md.
+Format reference: docs/reference/decision-records.md.
+Keep status "proposed" until a human maintainer decides.
+Delete these comments and every "Optional" section you do not use.
+-->
 
-- Status: Proposed
-- Decision date: YYYY-MM-DD
-- Owners: repository maintainers
+## Summary
 
-## Context
+In the context of <use case or component>,
+facing <concern or requirement>,
+we propose <option>
+and neglect <other options>,
+to achieve <benefits or quality attributes>,
+accepting <drawbacks>.
 
-Describe the problem, constraints, domain or business rules, and evidence that
-make a decision necessary.
+## Context and problem statement
 
-## Decision
+<!-- The situation, with evidence: file paths, measurements, incidents, or links. End with the question to decide. -->
 
-State the decision and its boundaries using BCP 14 terms where requirements
-must be normative.
+## Decision drivers
 
-## Alternatives considered
+- <force or quality attribute>
 
-List credible alternatives and explain why they were not selected.
+## Considered options
 
-## Consequences
+1. <current state, when one exists>
+2. <option>
 
-Document positive outcomes, costs, risks, migration work, and follow-up tasks.
+## Decision outcome
 
-## Related specifications
+<!-- Use BCP 14 keywords only in this section, and add the boilerplate sentence from docs/reference/documentation-standards.md. -->
 
-- None.
+Proposed option: "<option>", because <reason in terms of the decision drivers>.
 
-## Supersession
+### Consequences
 
-- Supersedes: None.
-- Superseded by: None.
+- Good, because <benefit>.
+- Bad, because <cost, risk, or follow-up work>.
+- Neutral, because <effect that is neither>.
+
+### Confirmation
+
+<!-- How compliance is verified: tests, CI checks, review checklist items, or measurements. -->
+
+## Pros and cons of the options
+
+<!-- Optional when the options are trivial. -->
+
+### <current state>
+
+- Good, because <argument>.
+- Bad, because <argument>.
+
+### <option>
+
+- Good, because <argument>.
+- Bad, because <argument>.
+
+## More information
+
+<!-- Optional. Related ADRs and SPECs, external references, and the conditions that would reopen this decision. -->

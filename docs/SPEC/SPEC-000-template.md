@@ -1,59 +1,90 @@
 ---
-title: "SPEC-000: Capability title"
+title: "SPEC-NNN: Capability name"
 created: YYYY-MM-DDTHH:mm
 modified: YYYY-MM-DDTHH:mm
-audience: define the primary user persona and implementation reviewers
+audience: primary user persona and implementation reviewers
 content_type: reference
+status: draft
+owner: repository maintainers
+approvers: []
+target-release: unscheduled
 tags:
   - specification
   - product
 ---
 
-# SPEC-000: Capability title
+# SPEC-NNN: Capability name
 
-Audience: identify the primary user persona and the implementation reviewers.
+<!--
+Copy to docs/SPEC/SPEC-NNN-<capability>.md.
+Format reference: docs/reference/decision-records.md#specifications.
+Keep status "draft" until a human approver sets "approved".
+-->
 
-- Status: Draft
-- Owner: repository maintainers
-- Target release: Unscheduled
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) ([RFC 2119](https://www.rfc-editor.org/info/rfc2119), [RFC 8174](https://www.rfc-editor.org/info/rfc8174)) when, and only when, they appear in all capitals, as shown here.
+
+## Summary
+
+<!-- One paragraph: who gets what outcome, and why now. -->
 
 ## Problem
 
-Describe the user problem, evidence, and why it matters now.
+<!-- The user problem, the evidence for it, and what happens if nothing changes. -->
+
+## Personas
+
+- <persona>: <goal and context>
 
 ## Goals
 
-- Define measurable outcomes.
+- <measurable outcome>
 
 ## Non-goals
 
-- State what is deliberately outside this specification.
+- <deliberately excluded outcome>
 
 ## User journeys
 
-Describe the relevant persona, trigger, journey, and expected outcome.
+<!-- Trigger, steps, and result for each persona. -->
 
 ## Requirements
 
-Use BCP 14 terms for normative requirements.
+| ID | Requirement |
+| --- | --- |
+| REQ-1 | The system MUST <observable behavior>. |
 
 ## Domain and business rules
 
-Define terminology, invariants, validation, authorization, and data ownership.
+<!-- Terminology, invariants, validation, authorization, and data ownership. -->
 
 ## Security and privacy
 
-Identify trust boundaries, sensitive data, threats, and required controls.
+<!-- Trust boundaries, sensitive data, threats, and required controls. Update the threat model if they change. -->
 
 ## Acceptance criteria
 
-- [ ] Define observable and testable outcomes.
+<!-- One Given-When-Then per criterion. Each criterion is verified by a test whose name contains its ID, or by a recorded manual acceptance. -->
+
+```text
+AC-1
+Given <starting state>
+When <single action>
+Then <observable outcome>
+```
+
+| Criterion | Requirements | Verification |
+| --- | --- | --- |
+| AC-1 | REQ-1 | Integration test / E2E test / manual acceptance |
 
 ## Delivery plan
 
-Break the work into reviewable tasks after this specification is approved.
+<!-- Reviewable tasks, written after this specification is approved. Each task names the acceptance criteria it satisfies. -->
 
-## Related decisions
+## Open questions
 
-- ADRs: None.
-- Superseded specifications: None.
+<!-- Questions that block approval. Questions that meet an ADR trigger become proposed ADRs. -->
+
+## Related records
+
+- ADRs: none.
+- Superseded specifications: none.
