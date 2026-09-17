@@ -1,7 +1,7 @@
 ---
 title: Changelog
 created: 2026-09-17T01:50
-modified: 2026-09-17T01:50
+modified: 2026-09-17T02:45
 audience: users, operators, and maintainers
 content_type: reference
 tags:
@@ -19,7 +19,8 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Added
 
-- Establish AI-assisted repository governance, automated quality checks, CodeQL, Dependabot for Bun, ADR and specification workflows, and portable documentation standards.
+- Automated quality checks, CodeQL analysis, and Dependabot updates for Bun and GitHub Actions.
+- Architecture decision records, specification templates, how-to guides, and reference standards so that maintainers and AI coding agents can recover why the system is built the way it is.
 
 ### Changed
 
@@ -30,3 +31,5 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 - Restrict the development authentication bypass to local requests.
 - Add baseline browser hardening headers and dependency auditing.
+
+[Unreleased]: https://github.com/parkisutama/time-progress/commits/main
