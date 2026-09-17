@@ -6,17 +6,32 @@ export type { EventItem } from './event-schema';
 
 import type { EventItem } from './event-schema';
 
-export const eventsStore = createEventsStore();
+type EventsStorage = Pick<Storage, 'getItem' | 'setItem'>;
 
-function createEventsStore() {
+export type EventsStoreOptions = {
+	fetch: typeof fetch;
+	/** Browser storage for the local event list; omitted during server rendering. */
+	storage?: EventsStorage;
+	/** Loads events from the server when the store is created. */
+	syncOnCreate?: boolean;
+};
+
+export const eventsStore = createEventsStore({
+	fetch: (input, init) => fetch(input, init),
+	storage: typeof localStorage === 'undefined' ? undefined : localStorage,
+	syncOnCreate: typeof window !== 'undefined'
+});
+
+export function createEventsStore(options: EventsStoreOptions) {
 	const key = 'tp:events:v1';
 	const initial: EventItem[] = [];
+	const { storage } = options;
 	const { subscribe, set, update } = writable<EventItem[]>(load());
 
 	function load(): EventItem[] {
-		if (typeof localStorage === 'undefined') return initial;
+		if (!storage) return initial;
 		try {
-			const raw = localStorage.getItem(key);
+			const raw = storage.getItem(key);
 			return raw ? (parseEventList(JSON.parse(raw)) ?? initial) : initial;
 		} catch {
 			return initial;
@@ -24,13 +39,12 @@ function createEventsStore() {
 	}
 
 	function persist(value: EventItem[]) {
-		if (typeof localStorage === 'undefined') return;
-		localStorage.setItem(key, JSON.stringify(value));
+		storage?.setItem(key, JSON.stringify(value));
 	}
 
 	async function syncFromServer() {
 		try {
-			const res = await fetch('/events');
+			const res = await options.fetch('/events');
 			if (res.ok) {
 				const items = parseEventList(await res.json()) ?? [];
 				set(items);
@@ -42,7 +56,7 @@ function createEventsStore() {
 	}
 
 	// try initial sync (if authorized server returns 401, we stay local)
-	if (typeof window !== 'undefined') {
+	if (options.syncOnCreate) {
 		syncFromServer();
 	}
 
@@ -57,11 +71,13 @@ function createEventsStore() {
 				return next;
 			});
 			// try server
-			fetch('/events', {
-				method: 'POST',
-				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify(item)
-			}).catch(() => {});
+			options
+				.fetch('/events', {
+					method: 'POST',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify(item)
+				})
+				.catch(() => {});
 			return item;
 		},
 		updateItem(id: string, patch: Partial<EventItem>) {
@@ -71,11 +87,13 @@ function createEventsStore() {
 				persist(next);
 				return next;
 			});
-			fetch('/events', {
-				method: 'PATCH',
-				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ id, ...patch })
-			}).catch(() => {});
+			options
+				.fetch('/events', {
+					method: 'PATCH',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify({ id, ...patch })
+				})
+				.catch(() => {});
 		},
 		remove(id: string) {
 			update((list) => {
@@ -83,11 +101,13 @@ function createEventsStore() {
 				persist(next);
 				return next;
 			});
-			fetch('/events', {
-				method: 'DELETE',
-				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ id })
-			}).catch(() => {});
+			options
+				.fetch('/events', {
+					method: 'DELETE',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify({ id })
+				})
+				.catch(() => {});
 		},
 		setAll(items: EventItem[]) {
 			const validated = parseEventList(items) ?? [];
