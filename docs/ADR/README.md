@@ -27,6 +27,7 @@ Each record captures one architectural decision, the options that were considere
 | --- | --- | --- |
 | [ADR-002](ADR-002-verify-cloudflare-access-identity.md) | Should the Worker trust the Access email header, or verify the Access token? | Verify the Access token in the Worker |
 | [ADR-003](ADR-003-store-events-per-identity-in-kv.md) | How are events persisted, and what happens when stored data fails validation? | Keep one list per identity; never overwrite unreadable data |
+| [ADR-004](ADR-004-declare-public-contract-and-versioning.md) | What is the public contract, and which version line starts? | Declare the contract and release `0.1.0` |
 
 ## Decision log
 
@@ -35,3 +36,4 @@ Each record captures one architectural decision, the options that were considere
 | [ADR-001](ADR-001-web-runtime-and-toolchain.md) | Web runtime and toolchain | accepted | 2026-09-17 |
 | [ADR-002](ADR-002-verify-cloudflare-access-identity.md) | Verify Cloudflare Access identity | proposed | 2026-09-17 |
 | [ADR-003](ADR-003-store-events-per-identity-in-kv.md) | Store events per identity in KV | proposed | 2026-09-17 |
+| [ADR-004](ADR-004-declare-public-contract-and-versioning.md) | Declare the public contract and versioning | proposed | 2026-09-17 |
