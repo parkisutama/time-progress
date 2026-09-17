@@ -1,7 +1,7 @@
 ---
 title: Documentation Index
-created: 2026-09-17T01:50
-modified: 2026-09-17T02:00
+created: 2026-09-17T01:50:00+07:00
+modified: 2026-09-17T02:47:43+07:00
 audience: users, contributors, maintainers, and AI coding agents
 content_type: reference
 tags:
@@ -9,31 +9,39 @@ tags:
   - diataxis
 ---
 
-# Documentation index
+# Documentation Index
 
-## Audience
+Documents are grouped by the reader's need, following [Diátaxis](https://diataxis.fr/).
 
-This index serves users, contributors, maintainers, and AI coding agents who need to locate the right form of documentation.
+To choose a type for a new document, use the [compass](reference/documentation-standards.md#compass).
 
-## Content types
+## How-to Guides
 
-Documentation is classified by reader need using [Diátaxis](https://diataxis.fr/), rather than mirroring the source-code folder structure.
+- [How to propose an architecture decision](how-to/propose-an-architecture-decision.md)
+- [How to decide a proposed architecture decision](how-to/decide-a-proposed-architecture-decision.md)
+- [How to prepare a release](how-to/prepare-a-release.md)
 
-| Content type | Primary persona and need | Location |
-| --- | --- | --- |
-| Tutorial | New user learning through a guided experience | `docs/tutorials/` |
-| How-to guide | User or operator completing a concrete task | `docs/how-to/` |
-| Reference | Contributor or integrator needing exact facts and contracts | `docs/reference/` |
-| Explanation | Maintainer seeking rationale, concepts, and trade-offs | `docs/explanation/` |
-| ADR | Maintainer or agent reviewing durable architectural decisions | `docs/ADR/` |
-| SPEC | Product and engineering participants defining intended behavior | `docs/SPEC/` |
+## Reference
 
-The classification is about content purpose. A document MUST move or split when its reader need changes, even if the implementation remains in the same code folder.
+- [Documentation standards](reference/documentation-standards.md): keywords, documentation types, frontmatter, portable Markdown, README, and editor settings
+- [Decision records](reference/decision-records.md): ADR and SPEC formats, statuses, and decision requests
+- [Change management](reference/change-management.md): commits, review comments, changelog, and versions
+- [Testing conventions](reference/testing-conventions.md): layers, required coverage, Arrange-Act-Assert, and Given-When-Then
+- [Definition of done](reference/definition-of-done.md)
 
-## Governance
+## Explanation
 
-- [Engineering governance](reference/engineering-governance.md)
+- [Decision and documentation system](explanation/decision-and-documentation-system.md): why the repository records decisions this way
+- [Threat model](explanation/threat-model.md)
+
+## Records
+
 - [Architecture decision records](ADR/README.md)
 - [Specifications](SPEC/README.md)
-- [Definition of done](reference/definition-of-done.md)
-- [Threat model](explanation/threat-model.md)
+
+## Repository Root
+
+- [`README.md`](../README.md): what the project is and how to run it
+- [`AGENTS.md`](../AGENTS.md): the contract for AI coding agents and contributors
+- [`CHANGELOG.md`](../CHANGELOG.md): notable changes
+- [`SECURITY.md`](../SECURITY.md): how to report a vulnerability
