@@ -4,9 +4,10 @@ created: 2026-09-17T02:45
 modified: 2026-09-17T02:45
 audience: maintainers, contributors, and AI coding agents
 content_type: explanation
-status: proposed
+status: accepted
 date: 2026-09-17
-decision-makers: []
+decision-makers:
+  - Parkis Utama
 consulted:
   - AI coding agent (governance audit, 2026-09-17)
 informed: []
@@ -25,8 +26,8 @@ tags:
 
 In the context of persisting personal events for the web application,
 facing a confirmed defect in which one invalid stored record causes the next write to erase every event of that user,
-we propose keeping one Workers KV list per identity with fail-closed reads and writes and visible client synchronization failures
-and neglect the unchanged current design, one KV key per event, and Cloudflare D1,
+we decided for keeping one Workers KV list per identity with fail-closed reads and writes and visible client synchronization failures
+and neglected the unchanged current design, one KV key per event, and Cloudflare D1,
 to achieve data integrity with the smallest change to the current contract,
 accepting that concurrent writes still resolve as last write wins and that the storage model is revisited for the desktop edition.
 
