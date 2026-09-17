@@ -1,46 +1,60 @@
 ---
 title: Definition of Done
 created: 2026-09-17T01:50
-modified: 2026-09-17T01:50
-audience: contributors and reviewers
+modified: 2026-09-17T02:45
+audience: contributors, reviewers, and AI coding agents
 content_type: reference
 tags:
   - engineering
+  - quality
   - reference
 ---
 
 # Definition of done
 
-Audience: contributors and reviewers.
-
-A change is complete only when all applicable items are satisfied.
+A change is done when every applicable item below is true.
+Each item links to the reference that defines it.
 
 ## Correctness
 
-- Behavior matches the approved task or specification.
-- Error and boundary cases are covered by tests.
-- No unrelated behavior changes are mixed into the change.
+- Behavior matches the approved SPEC or task, and every affected `AC-n` has a verifying test or recorded manual acceptance.
+- Boundary and error cases are covered as required by [Testing conventions](testing-conventions.md#required-coverage).
+- A bug fix includes a regression test that fails without the fix.
+- No unrelated behavior change is mixed into the change.
 
 ## Quality
 
-- `bun run lint`, `bun run check`, `bun run test`, and `bun run build` pass.
-- Names, types, and module boundaries make the change understandable without author explanation.
-- Dead code and unnecessary dependencies are not introduced.
+- `bun run verify` passes.
+- Names, types, and module boundaries make the change understandable without the author's explanation.
+- No dead code or unnecessary dependency is introduced.
 
 ## Security
 
 - Trust boundaries are identified and external input is validated.
 - Authentication and authorization checks remain enforced.
+- Failed validation of stored data never overwrites or deletes stored data.
 - `bun audit` has no unmitigated findings.
-- Staged changes contain no credentials, tokens, private keys, or production personal data.
+- The staged diff contains no credentials, tokens, private keys, or production personal data.
+
+## Decisions and records
+
+- Relevant ADRs were read before implementation.
+- Every decision that meets an ADR trigger has an accepted ADR; no `proposed` ADR is implemented.
+- Commits that relate to a record include a `Refs:` footer.
+- The [threat model](../explanation/threat-model.md) reflects new risks, controls, or known defects.
+
+## Documentation
+
+- Documents touched by the change are still accurate.
+- New documents declare audience and Diátaxis type in frontmatter and follow [Documentation standards](documentation-standards.md).
+- `docs/index.md` and `docs/ADR/README.md` list new or changed documents.
+- If `AGENTS.md` changed, `.github/copilot-instructions.md` was updated in the same commit.
 
 ## Delivery
 
-- Relevant ADRs were read before implementation and new architectural decisions are recorded in `docs/ADR/`.
-- Significant behavior or contract changes have an approved specification in `docs/SPEC/`.
-- Notable changes are recorded under `Unreleased` in `CHANGELOG.md`.
-- Documentation identifies its audience and follows one Diátaxis content type.
+- Notable changes are recorded under `Unreleased` in `CHANGELOG.md`, and the version impact is stated in the pull request.
+- Commits are atomic and follow [Change management](change-management.md#commit-messages).
+- Review comments are resolved; no `blocking` comment remains open.
 - `git diff --check` passes and the staged diff matches the intended scope.
-- Commits are atomic, follow Conventional Commits 1.0.0-beta.4, and are independently understandable.
-- Platform-specific or human acceptance is recorded separately from automated checks.
-- Push, merge, deployment, and other external mutations occur only with explicit authorization.
+- Platform or human acceptance is recorded separately from automated checks.
+- Push, merge, tag, release, and deployment happen only with explicit authorization.
