@@ -22,7 +22,7 @@
 		"deploy:pages": "bun run build && node node_modules/wrangler/bin/wrangler.js pages deploy .svelte-kit/output/client --functions .svelte-kit/output/server"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.5.14",
+		"@biomejs/biome": "^2.5.15",
 		"@playwright/test": "^1.63.0",
 		"@sveltejs/adapter-cloudflare": "^7.2.9",
 		"@sveltejs/adapter-static": "^3.0.10",
